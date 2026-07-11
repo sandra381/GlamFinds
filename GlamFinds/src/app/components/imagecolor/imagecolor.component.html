@@ -1,0 +1,19 @@
+<link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
+<div class="container">
+  <div class="screen-body-item left">
+    <h2 class="look-title">Descubre tu Paleta</h2>
+    <input [(ngModel)]="imageUrl" placeholder="Ingresa la URL de la imagen" />
+    <button (click)="getColorFromUrl()">Obtener Colores</button>
+    <div *ngIf="imageUrl">
+      <img [src]="imageUrl" alt="Imagen" width="300" />
+    </div>
+  </div>
+  <div class="screen-body-item">
+  <div class="colors-container" *ngIf="colors">
+    <div class="color-box" *ngFor="let key of getKeys(colors)">
+      <p class="color-text">{{ key }}: <span [style.color]="formatRgb(colors[key].rgb)">{{ formatRgb(colors[key].rgb) }}</span></p>
+      <div class="color-preview" [style.background]="formatRgb(colors[key].rgb)"></div>
+    </div>
+  </div>
+  </div>
+</div>

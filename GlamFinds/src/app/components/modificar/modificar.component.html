@@ -1,0 +1,36 @@
+<app-menu3></app-menu3>
+<div class="fondo">
+  <div class="formulario">
+    <br>
+    <h1 class="titulo">Modificar</h1>
+    <br>
+    <div class="example-form">
+      <div class="form1">
+      <mat-form-field class="example-full-width" appearance="outline">
+        <mat-label>Descripción</mat-label>
+        <mat-icon matSuffix>description</mat-icon>
+        <input [(ngModel)]="posts_generales.descripcion" type="text" matInput>
+      </mat-form-field>
+      </div>
+      <div class="form2">
+      <mat-form-field class="example-full-width" appearance="outline">
+        <mat-label>Imagen</mat-label>
+        <mat-icon matSuffix>image</mat-icon>
+        <input [(ngModel)]="posts_generales.imagen" type="url" matInput>
+      </mat-form-field>
+      </div>
+    <div class="form4">
+      <mat-form-field class="example-full-width" appearance="outline">
+        <mat-label>Categoría</mat-label>
+        <mat-icon matSuffix>category</mat-icon>
+        <textarea matInput [(ngModel)]="posts_generales.categoria" ></textarea>
+      </mat-form-field>
+    </div>
+      <div class="button-container">
+        <button class="example-button" mat-raised-button color="primary" (click)="guardarModificar()">Guardar Cambio</button>
+        <button class="example-button" mat-raised-button color="warn" (click)="regresar()">Regresar</button>
+      </div>
+    </div>
+  </div>
+</div>
+

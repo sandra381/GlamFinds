@@ -1,0 +1,88 @@
+<div class="new-art-dialog">
+
+  <!-- ── Left panel: brand / editorial ──────────────────── -->
+  <div class="nal-left">
+    <div class="nal-left-top">
+      <span class="nal-brand-tag">GlamFinds</span>
+      <div class="nal-accent-line"></div>
+      <h2 class="nal-left-title">Nueva<br>Publicación</h2>
+      <p class="nal-left-desc">Comparte tu visión de la moda con la comunidad. Tendencias, looks y cultura editorial.</p>
+    </div>
+    <div class="nal-left-deco">
+      <span class="nal-deco-circle"></span>
+      <span class="nal-deco-circle nal-deco-circle--sm"></span>
+      <span class="nal-deco-circle nal-deco-circle--xs"></span>
+    </div>
+  </div>
+
+  <!-- ── Right panel: form ───────────────────────────────── -->
+  <div class="nal-right" [formGroup]="formGroups">
+
+    <div class="nal-form-header">
+      <span class="nal-form-tag">— ARTÍCULO</span>
+    </div>
+
+    <!-- Título -->
+    <div class="naf-field">
+      <label class="naf-label">Título</label>
+      <textarea class="naf-textarea" formControlName="titulo"
+                placeholder="Escribe un título atractivo..." rows="2"></textarea>
+    </div>
+
+    <!-- Contenido (TinyMCE) -->
+    <div class="naf-field">
+      <label class="naf-label">Contenido</label>
+      <div class="naf-editor-wrap">
+        <editor apiKey="okoeatllmzmn8inis446g4sbpfel1aw6efmainzoxa27enxv"
+                [(ngModel)]="article" formControlName="contenido"
+                (ngModelChange)="modelChangeFn($event)"
+                [init]="{plugins: ['anchor', 'autolink', 'charmap', 'codesample', 'emoticons', 'image', 'link', 'lists', 'media', 'searchreplace', 'table', 'visualblocks', 'wordcount'],
+                          min_height: 260,
+                          menubar: false,
+                          toolbar: 'bold italic underline | bullist numlist | link image | emoticons',
+                          skin: 'oxide',
+                          content_css: 'default',
+                          placeholder: 'Escribe el contenido del artículo...'}">
+        </editor>
+      </div>
+    </div>
+
+    <!-- Imagen de portada -->
+    <div class="naf-field">
+      <label class="naf-label">Imagen de portada</label>
+      <label class="naf-file-label">
+        <input type="file" (change)="imagenSelect($event)" accept="image/*,video/*" class="naf-file-input">
+        <span class="naf-file-text">{{ msg ? 'Archivo seleccionado' : 'Seleccionar archivo' }}</span>
+        <span class="naf-file-icon">↑</span>
+      </label>
+      <div class="naf-preview" *ngIf="imgUrl">
+        <img *ngIf="isImage(imgUrl)" [src]="imgUrl" alt="preview" class="naf-preview-img">
+        <video *ngIf="!isImage(imgUrl)" [src]="imgUrl" class="naf-preview-img" muted></video>
+      </div>
+    </div>
+
+    <!-- Categoría -->
+    <div class="naf-field">
+      <label class="naf-label">Categoría</label>
+      <div class="naf-select-wrap">
+        <select formControlName="categoria" class="naf-select">
+          <option value="" disabled selected>Selecciona una categoría</option>
+          <option value="1">Tendencias</option>
+          <option value="2">Ropa</option>
+          <option value="3">Maquillaje</option>
+          <option value="4">Accesorios</option>
+          <option value="5">Zapatos</option>
+        </select>
+        <span class="naf-select-arrow">▾</span>
+      </div>
+    </div>
+
+    <!-- Submit -->
+    <div class="naf-actions">
+      <button class="naf-submit" (click)="guardarPostA()">Publicar Artículo</button>
+    </div>
+
+  </div>
+  <!-- /nal-right -->
+
+</div>

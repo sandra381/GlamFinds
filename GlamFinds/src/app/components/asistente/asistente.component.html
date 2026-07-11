@@ -1,0 +1,84 @@
+<div class="container" style="width:100%; height:100%;">
+  <div class="content" style="width:100%; height:100%;">
+    <mat-drawer-container style="width:100%; height:100%;">
+      <mat-drawer mode="side" opened><app-menu></app-menu></mat-drawer>
+      <mat-drawer-content>
+        <app-menu2></app-menu2>
+
+        <div class="asistente-page">
+
+          <!-- Chat window -->
+          <div class="chat-window">
+
+            <!-- Header -->
+            <header class="chat-header">
+              <div class="chat-header-avatar">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                </svg>
+              </div>
+              <div class="chat-header-info">
+                <h1 class="chat-title">Asistente GlamFinds</h1>
+                <span class="chat-status">
+                  <span class="status-dot"></span>
+                  En línea
+                </span>
+              </div>
+            </header>
+
+            <!-- Messages -->
+            <div class="messages-area">
+
+              <div
+                *ngFor="let msg of messages"
+                class="message"
+                [class.message--user]="msg.isUser"
+                [class.message--bot]="!msg.isUser">
+
+                <div class="message-avatar" *ngIf="!msg.isUser">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                  </svg>
+                </div>
+
+                <div class="message-bubble">{{ msg.text }}</div>
+
+              </div>
+
+              <!-- Loading indicator -->
+              <div class="message message--bot" *ngIf="loading">
+                <div class="message-avatar">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                  </svg>
+                </div>
+                <div class="message-bubble message-bubble--typing">
+                  <span></span><span></span><span></span>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Input area -->
+            <div class="chat-input-area">
+              <input
+                class="chat-input"
+                type="text"
+                placeholder="Escribe tu mensaje..."
+                [(ngModel)]="input"
+                (keydown)="onKeyDown($event)">
+              <button class="chat-send" (click)="send()" [disabled]="!input.trim() || loading">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="22" y1="2" x2="11" y2="13"/>
+                  <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                </svg>
+              </button>
+            </div>
+
+          </div>
+        </div>
+
+      </mat-drawer-content>
+    </mat-drawer-container>
+  </div>
+</div>

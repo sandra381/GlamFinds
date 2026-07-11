@@ -1,0 +1,193 @@
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<div class="container" style="width:100%;height:100%;">
+  <div class="content" style="width:100%;height:100%;">
+    <mat-drawer-container style="width:100%;height:100%;">
+      <mat-drawer mode="side" opened><app-menu></app-menu></mat-drawer>
+      <mat-drawer-content>
+        <app-menu2></app-menu2>
+
+        <section class="art-content">
+
+          <!-- ── Page header ──────────────────────────────────── -->
+          <div class="art-page-header">
+            <div class="art-page-header-left">
+              <h1 class="art-page-title">Artículos</h1>
+              <p class="art-page-sub">Tendencias, consejos y moda editorial</p>
+            </div>
+            <button class="btn-new-art" (click)="openAgregar()">+ Nuevo Artículo</button>
+          </div>
+
+          <!-- ── Articles grid ─────────────────────────────────── -->
+          <div class="art-grid">
+
+            <div class="art-item" *ngFor="let articulo of dataSource; let i = index">
+
+              <!-- CSS-only modal toggle -->
+              <input type="checkbox" [id]="'art'+articulo.id_post" class="art-modal-toggle">
+
+              <!-- ── Card ────────────────────────────────────────── -->
+              <div class="art-card">
+
+                <!-- Cover image (clickable → opens modal) -->
+                <label [for]="'art'+articulo.id_post" class="art-card-cover">
+                  <img *ngIf="articulo.imagen" class="art-card-img"
+                       [src]="articulo.imagen.startsWith('http') ? articulo.imagen : 'assets/img/'+articulo.imagen"
+                       alt="portada" loading="lazy">
+                  <div class="art-card-img-placeholder" *ngIf="!articulo.imagen">
+                    <span class="art-placeholder-mono">GF</span>
+                    <span class="art-placeholder-label">{{articulo.name_categoria}}</span>
+                  </div>
+                  <span class="art-cat-badge">{{articulo.name_categoria}}</span>
+                </label>
+
+                <!-- Card body -->
+                <div class="art-card-body">
+                  <h2 class="art-card-title">{{articulo.titulo}}</h2>
+
+                  <div class="art-card-excerpt" [innerHTML]="articulo.contenido"></div>
+
+                  <div class="art-card-author-row">
+                    <img [src]="'assets/img/'+perfil[articulo.id_user]?.imagen"
+                         alt="autor" class="art-author-avatar" loading="lazy">
+                    <span class="art-author-name">{{articulo.usuario}}</span>
+                  </div>
+
+                  <div class="art-card-bottom">
+                    <div class="art-card-stats">
+                      <span class="art-stat-item">
+                        <button class="art-card-like-btn" (click)="like(articulo.id_post, i); $event.stopPropagation()">
+                          <mat-icon [ngClass]="toggle[i] ? 'art-like-active' : 'art-stat-icon'">favorite</mat-icon>
+                        </button>
+                        {{likes[articulo.id_post]?.cantidad || 0}}
+                      </span>
+                      <span class="art-stat-item">
+                        <mat-icon class="art-stat-icon">comment</mat-icon>
+                        {{comentarios[articulo.id_post]?.length || 0}}
+                      </span>
+                    </div>
+                    <label [for]="'art'+articulo.id_post" class="btn-leer-mas">Leer más</label>
+                  </div>
+                </div>
+              </div>
+              <!-- /art-card -->
+
+              <!-- ── Detail modal (CSS-only) ──────────────────────── -->
+              <div class="art-post-modal">
+                <label [for]="'art'+articulo.id_post" class="art-modal-backdrop"></label>
+
+                <div class="art-modal-box">
+
+                  <!-- Close button -->
+                  <label [for]="'art'+articulo.id_post" class="art-modal-close">✕</label>
+
+                  <div class="art-modal-layout">
+
+                  <!-- Left: imagen completa -->
+                  <div class="art-modal-image-panel" *ngIf="articulo.imagen"
+                       [style.background-image]="'url(' + (articulo.imagen.startsWith('http') ? articulo.imagen : 'assets/img/'+articulo.imagen) + ')'">
+                  </div>
+
+                  <!-- Right: Content -->
+                  <div class="art-modal-content-area">
+                    <span class="art-modal-cat">{{articulo.name_categoria}}</span>
+                    <h1 class="art-modal-title">{{articulo.titulo}}</h1>
+
+                    <div class="art-modal-meta">
+                      <img [src]="'assets/img/'+perfil[articulo.id_user]?.imagen"
+                           alt="autor" class="art-modal-author-avatar" loading="lazy">
+                      <span class="art-modal-author-name">{{articulo.usuario}}</span>
+                    </div>
+
+                    <hr class="art-modal-hr">
+
+                    <!-- Full article content -->
+                    <div class="art-modal-body" [innerHTML]="articulo.contenido"></div>
+
+                    <hr class="art-modal-hr">
+
+                    <!-- Actions row: like, save, edit -->
+                    <div class="art-modal-actions-row">
+                      <div class="art-modal-reactions">
+                        <button mat-icon-button (click)="like(articulo.id_post, i)"
+                                [ngClass]="{'art-like-active': toggle[i], 'art-like-inactive': !toggle[i]}">
+                          <mat-icon>favorite</mat-icon>
+                        </button>
+                        <span class="art-react-count">{{likes[articulo.id_post]?.cantidad || 0}}</span>
+
+                        <button mat-icon-button (click)="save(articulo.id_post, i)"
+                                [ngClass]="{'art-save-active': toggle1[i], 'art-save-inactive': !toggle1[i]}">
+                          <mat-icon>bookmark</mat-icon>
+                        </button>
+                      </div>
+
+                      <!-- Edit: only visible to the article's author -->
+                      <button *ngIf="articulo.id_user === usuariolog"
+                              class="btn-edit-art" (click)="openAgregar(articulo)">
+                        ✏ Editar artículo
+                      </button>
+                    </div>
+
+                    <hr class="art-modal-hr">
+
+                    <!-- Comments section -->
+                    <div class="art-comments-section">
+                      <h3 class="art-comments-heading">
+                        Comentarios
+                        <span class="art-comments-badge">{{comentarios[articulo.id_post]?.length || 0}}</span>
+                      </h3>
+
+                      <p class="art-no-comments" *ngIf="!comentarios[articulo.id_post]?.length">
+                        Sé el primero en comentar ✨
+                      </p>
+
+                      <div class="art-comment-list">
+                        <div class="art-comment-item" *ngFor="let val of comentarios[articulo.id_post] || []">
+                          <div class="art-comment-avatar">{{val.usuario?.charAt(0)?.toUpperCase()}}</div>
+                          <div class="art-comment-body">
+                            <p class="art-comment-text">
+                              <span class="art-comment-author">{{val.usuario}}</span> {{val.comments}}
+                            </p>
+                            <div class="botones-ed-bo" *ngIf="val.navegante === usuariolog">
+                              <button class="action-button" (click)="openMod(articulo.id_post, val.id_comment)">
+                                <img class="imgs" src="https://cdn-icons-png.flaticon.com/512/1159/1159633.png">
+                              </button>
+                              <button class="action-button" (click)="deleteComment(articulo.id_post, val.id_comment)">
+                                <img class="imgs" src="https://cdn-icons-png.flaticon.com/512/88/88666.png">
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- Comment input -->
+                      <div class="art-comment-input-row">
+                        <input [(ngModel)]="comentario[articulo.id_post]"
+                               type="text"
+                               class="art-comment-input"
+                               placeholder="Añade un comentario...">
+                        <button class="art-comment-btn" (click)="comment(articulo.id_post)">Publicar</button>
+                      </div>
+                    </div>
+                    <!-- /comments -->
+
+                  </div>
+                  <!-- /art-modal-content-area -->
+
+                  </div>
+                  <!-- /art-modal-layout -->
+                </div>
+                <!-- /art-modal-box -->
+              </div>
+              <!-- /art-post-modal -->
+
+            </div>
+            <!-- /art-item -->
+
+          </div>
+          <!-- /art-grid -->
+
+        </section>
+      </mat-drawer-content>
+    </mat-drawer-container>
+  </div>
+</div>

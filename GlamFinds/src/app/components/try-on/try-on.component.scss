@@ -1,0 +1,321 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; }
+
+/* ── Page wrapper ────────────────────────────────────────── */
+.av-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 48px 40px 40px;
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  gap: 24px;
+}
+
+/* ── Header ──────────────────────────────────────────────── */
+.av-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  text-align: center;
+}
+
+.av-tag {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: #C4A882;
+}
+
+.av-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 36px;
+  font-weight: 700;
+  color: #0A0A0A;
+  letter-spacing: -0.8px;
+  line-height: 1.1;
+  margin: 0;
+  padding: 0;
+  text-shadow: none;
+  background: transparent;
+}
+
+.av-title-line {
+  width: 40px;
+  height: 2px;
+  background: #C4A882;
+  border-radius: 2px;
+  margin-top: 10px;
+}
+
+.av-subtitle {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  color: #8A8A8A;
+  margin: 4px 0 0;
+  padding: 0;
+  letter-spacing: 0.3px;
+}
+
+/* ── Action buttons ──────────────────────────────────────── */
+.av-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.av-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  padding: 12px 28px !important;
+  background: #0A0A0A !important;
+  color: #FFFFFF !important;
+  font-family: 'DM Sans', sans-serif !important;
+  font-size: 10px !important;
+  font-weight: 700 !important;
+  letter-spacing: 2px !important;
+  text-transform: uppercase !important;
+  border: none !important;
+  border-radius: 10px !important;
+  cursor: pointer !important;
+  margin: 0 !important;
+  box-shadow: none !important;
+  transition: background 0.25s ease, transform 0.15s ease !important;
+}
+.av-btn:hover  { background: #C4A882 !important; transform: translateY(-1px) !important; }
+.av-btn:active { transform: translateY(0) !important; }
+
+.av-btn--outline {
+  background: transparent !important;
+  color: #0A0A0A !important;
+  border: 1.5px solid #0A0A0A !important;
+}
+.av-btn--outline:hover {
+  background: #0A0A0A !important;
+  color: #FFFFFF !important;
+  transform: translateY(-1px) !important;
+}
+
+/* ── Carousel ────────────────────────────────────────────── */
+.carousel-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 200px;
+  background: #FAFAF8;
+  border: 1px solid #E8E2DB;
+  border-radius: 16px;
+  padding: 16px 52px;
+  overflow: hidden;
+}
+
+.carousel {
+  display: flex;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  gap: 12px;
+  padding: 8px 0;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  flex: 1;
+  align-items: center;
+}
+.carousel::-webkit-scrollbar { display: none; }
+
+.carousel-item {
+  flex: 0 0 auto;
+  width: 90px;
+  height: 90px;
+  object-fit: contain;
+  cursor: grab;
+  border-radius: 10px;
+  border: 1.5px solid transparent;
+  background: #FFFFFF;
+  padding: 4px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+.carousel-item:hover {
+  border-color: #C4A882;
+  box-shadow: 0 4px 14px rgba(196,168,130,0.25);
+  transform: translateY(-2px);
+}
+
+/* Carousel empty state */
+.carousel-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 24px;
+  width: 100%;
+}
+
+.carousel-empty-icon {
+  width: 56px;
+  height: 56px;
+  background: #FFFFFF;
+  border: 1.5px solid #EDE8E1;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.carousel-empty-text {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  color: #B8B0A8;
+  letter-spacing: 0.3px;
+}
+
+/* Navigation arrows */
+.carousel-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 36px !important;
+  height: 36px !important;
+  background: #FFFFFF !important;
+  color: #0A0A0A !important;
+  border: 1.5px solid #C4A882 !important;
+  border-radius: 50% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  z-index: 2;
+  padding: 0 !important;
+  margin: 0 !important;
+  font-size: 12px !important;
+  box-shadow: 0 2px 8px rgba(196,168,130,0.2) !important;
+  transition: background 0.2s ease, color 0.2s ease, transform 0.15s ease !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+}
+.carousel-btn:hover {
+  background: #C4A882 !important;
+  color: #FFFFFF !important;
+  transform: translateY(-50%) scale(1.08) !important;
+}
+.prev { left: 10px; }
+.next { right: 10px; }
+
+/* ── Moodboard canvas ────────────────────────────────────── */
+.moodboard-container {
+  position: relative;
+  width: 100%;
+  flex: 1 1 0;
+  min-height: 600px;
+  background: #F7F3EE;
+  border: 1.5px dashed #C4A882;
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+/* Preview mode hides delete buttons */
+.moodboard-container.preview-mode .delete-btn { display: none !important; }
+.moodboard-container.preview-mode { border: none; }
+
+/* Canvas empty placeholder */
+.av-canvas-empty {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  pointer-events: none;
+}
+
+.av-canvas-empty-icon {
+  width: 88px;
+  height: 88px;
+  background: #FFFFFF;
+  border: 1.5px solid #E8E2DB;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 16px rgba(196,168,130,0.12);
+}
+
+.av-canvas-empty-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 20px;
+  font-weight: 600;
+  color: #3A3A3A;
+  margin: 0;
+}
+
+.av-canvas-empty-sub {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  color: #B8B0A8;
+  margin: 0;
+  text-align: center;
+}
+
+/* ── Draggable items ─────────────────────────────────────── */
+.moodboard-item {
+  position: absolute;
+  cursor: move;
+  background-size: cover;
+  background-position: center;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 3px 14px rgba(0,0,0,0.12), 0 0 0 1px rgba(255,255,255,0.6);
+  transition: box-shadow 0.2s ease;
+}
+.moodboard-item:hover {
+  box-shadow: 0 8px 28px rgba(0,0,0,0.18), 0 0 0 2px #C4A882;
+  z-index: 10;
+}
+.moodboard-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  pointer-events: none;
+}
+
+/* Delete button */
+.delete-btn {
+  position: absolute !important;
+  top: 5px !important;
+  right: 5px !important;
+  width: 20px !important;
+  height: 20px !important;
+  background: rgba(10,10,10,0.65) !important;
+  color: #FFFFFF !important;
+  border: none !important;
+  border-radius: 50% !important;
+  font-size: 9px !important;
+  cursor: pointer !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  z-index: 20 !important;
+  padding: 0 !important;
+  line-height: 1 !important;
+  margin: 0 !important;
+  box-shadow: none !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+  transition: background 0.2s ease !important;
+}
+.delete-btn:hover { background: #C4A882 !important; transform: none !important; }

@@ -1,0 +1,741 @@
+/* Fuentes cargadas en index.html vía Google Fonts */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+/* ── app-content override ────────────────────────────────── */
+:host ::ng-deep .app-content {
+  padding: 0 !important;
+  min-height: unset !important;
+  height: calc(100vh - 54px);
+  margin-top: 54px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Vista previa: nav oculta, canvas ocupa todo el ancho ─── */
+:host.mb-preview-active ::ng-deep mat-drawer {
+  display: none !important;
+}
+:host.mb-preview-active ::ng-deep mat-drawer-content {
+  margin-left: 0 !important;
+  margin-inline-start: 0 !important;
+}
+:host.mb-preview-active ::ng-deep .topbar {
+  left: 0 !important;
+}
+:host.mb-preview-active .mb-body {
+  overflow: hidden;
+}
+:host.mb-preview-active .moodboard-container {
+  width: 100% !important;
+  height: 100% !important;
+  flex: 1 1 0 !important;
+  align-self: stretch !important;
+}
+
+
+/* ── Outer wrapper ───────────────────────────────────────── */
+.mb-wrapper {
+  background: #FFFFFF;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* ── Top bar ─────────────────────────────────────────────── */
+.mb-topbar {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 20px 40px 18px;
+  background: #FFFFFF;
+  border-bottom: 1px solid #E8E2DB;
+  flex-shrink: 0;
+  flex-wrap: nowrap;
+}
+
+.mb-brand {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+}
+
+.mb-brand-tag {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: #C4A882;
+}
+
+.mb-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 26px;
+  font-weight: 700;
+  color: #0A0A0A;
+  letter-spacing: -0.5px;
+  line-height: 1.15;
+  margin: 0;
+  padding: 0;
+  white-space: nowrap;
+}
+
+/* ── Input de nombre del moodboard (se incluye en la descarga) */
+.mb-board-name-row {
+  display: flex;
+  align-items: center;
+  margin-top: 4px;
+}
+
+.mb-board-name-input {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 11px;
+  font-weight: 400;
+  color: #8A8A8A;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid #E0D8CF;
+  outline: none;
+  padding: 2px 0 3px;
+  width: 220px;
+  letter-spacing: 0.3px;
+  transition: border-color 0.2s ease, color 0.2s ease;
+
+  &::placeholder { color: #C4B8AA; }
+  &:focus {
+    border-bottom-color: #C4A882;
+    color: #3A3A3A;
+  }
+}
+
+/* ── Body (sidebar + canvas) ─────────────────────────────── */
+.mb-body {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  flex: 1 1 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* ── Left sidebar ────────────────────────────────────────── */
+.mb-sidebar {
+  width: 220px;
+  flex-shrink: 0;
+  background: #FAFAF8;
+  border-right: 1px solid #E8E2DB;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px 18px;
+  overflow-y: auto;
+  height: 100%;
+}
+
+.mb-sidebar-label {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #8A8A8A;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  &::before {
+    content: '';
+    display: inline-block;
+    width: 16px;
+    height: 1.5px;
+    background: #C4A882;
+    border-radius: 1px;
+    flex-shrink: 0;
+  }
+}
+
+/* ── Drop zone ───────────────────────────────────────────── */
+.dropzone {
+  width: 100%;
+  border: 1.5px dashed #C4A882;
+  border-radius: 14px;
+  background: #F7F3EE;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  &:hover { border-color: #A8896A; background: #EDE8E1; }
+}
+
+.dropzone-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 22px 14px;
+}
+
+.dropzone-text {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: #5A5A5A;
+  margin: 0;
+  text-align: center;
+}
+.dropzone-sub {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 10px;
+  color: #B8B0A8;
+  margin: 0;
+  text-align: center;
+}
+
+/* ── Dropdown de tipografía ──────────────────────────────── */
+.mb-font-dropdown {
+  position: relative;
+  width: 100%;
+}
+
+.mb-font-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  padding: 9px 12px;
+  background: #F7F3EE;
+  border: 1.5px solid #E0D8CF;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+
+  &:hover { border-color: #C4A882; background: #EDE8E1; }
+}
+
+.mb-font-trigger--open {
+  border-color: #C4A882 !important;
+  background: #EDE8E1 !important;
+  border-bottom-left-radius: 4px;
+  border-bottom-right-radius: 4px;
+}
+
+.mb-font-trigger-preview {
+  font-size: 14px;
+  font-weight: 500;
+  color: #2A2A2A;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.3;
+}
+
+.mb-font-chevron {
+  flex-shrink: 0;
+  color: #9A8A7A;
+  transition: transform 0.2s ease;
+  .mb-font-trigger--open & { transform: rotate(180deg); }
+}
+
+.mb-font-panel {
+  position: absolute;
+  top: calc(100% - 1px);
+  left: 0;
+  right: 0;
+  background: #FFFFFF;
+  border: 1.5px solid #C4A882;
+  border-top-color: #E0D8CF;
+  border-radius: 0 0 10px 10px;
+  overflow: hidden;
+  z-index: 100;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.10);
+}
+
+.mb-font-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 9px 12px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.12s ease;
+
+  &:not(:last-child) { border-bottom: 1px solid #F0EAE0; }
+  &:hover { background: #FAF6F1; }
+}
+
+.mb-font-option--active {
+  background: #F5EEE5 !important;
+  .mb-font-option-name { color: #8A6A42; }
+}
+
+.mb-font-option-sample {
+  font-size: 22px;
+  line-height: 1;
+  color: #2A2A2A;
+  width: 32px;
+  flex-shrink: 0;
+  text-align: center;
+}
+
+.mb-font-option-name {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: #6A6A6A;
+}
+
+/* ── Paleta de color de texto ────────────────────────────── */
+.mb-text-color-swatches {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex-wrap: wrap;
+}
+
+.mb-text-color-swatch {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid #E0D8CF;
+  cursor: pointer;
+  padding: 0;
+  flex-shrink: 0;
+  transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+
+  &:hover { transform: scale(1.15); border-color: #C4A882; }
+}
+
+.mb-text-color-swatch--active {
+  border-color: #C4A882 !important;
+  box-shadow: 0 0 0 2px rgba(196, 168, 130, 0.4);
+  transform: scale(1.1);
+}
+
+/* swatch blanco necesita borde visible */
+.mb-text-color-swatch[style*="#FFFFFF"],
+.mb-text-color-swatch[style*="rgb(255, 255, 255)"] {
+  border-color: #C8C0B4;
+  &.mb-text-color-swatch--active { border-color: #C4A882 !important; }
+}
+
+/* ── Botón Seleccionar archivo ───────────────────────────── */
+.mb-file-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  width: 100%;
+  padding: 8px 14px;
+  background: transparent;
+  border: 1.5px solid #E0D8CF;
+  border-radius: 10px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  color: #8A8A8A;
+  cursor: pointer;
+  transition: border-color 0.2s ease, color 0.2s ease;
+  &:hover {
+    border-color: #C4A882;
+    color: #5A5A5A;
+  }
+  svg { flex-shrink: 0; }
+}
+
+/* ── Botón Añadir texto ──────────────────────────────────── */
+.mb-text-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 14px;
+  background: #F7F3EE;
+  border: 1.5px solid #E0D8CF;
+  border-radius: 10px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  color: #5A5A5A;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+  &:hover {
+    background: #EDE8E1;
+    border-color: #C4A882;
+    color: #0A0A0A;
+  }
+  svg { flex-shrink: 0; }
+}
+
+/* ── Swatches de fondo ───────────────────────────────────── */
+.mb-bg-swatches {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.mb-bg-swatch {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid #E0D8CF;
+  cursor: pointer;
+  transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+  padding: 0;
+  flex-shrink: 0;
+  &:hover { transform: scale(1.12); border-color: #C4A882; }
+}
+
+.mb-bg-swatch--active {
+  border-color: #C4A882 !important;
+  box-shadow: 0 0 0 2px rgba(196, 168, 130, 0.35);
+  transform: scale(1.1);
+}
+
+/* swatch negro necesita borde diferente para que se vea */
+.mb-bg-swatch[style*="#0A0A0A"] {
+  border-color: #555;
+  &.mb-bg-swatch--active { border-color: #C4A882 !important; }
+}
+
+/* ── Tips ────────────────────────────────────────────────── */
+.mb-tips-list {
+  margin: 0;
+  padding: 0 0 0 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  li {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px;
+    color: #8A8A8A;
+    line-height: 1.5;
+  }
+}
+
+/* ── Divider label ───────────────────────────────────────── */
+.mb-divider-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  &::before, &::after { content: ''; flex: 1; height: 1px; background: #E8E2DB; }
+  span {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: #C4A882;
+    white-space: nowrap;
+  }
+}
+
+/* ── Moodboard canvas ────────────────────────────────────── */
+.moodboard-container {
+  position: relative;
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  align-self: stretch;
+  background-color: #f4ede4;
+  background-image:
+    radial-gradient(circle, rgba(160, 130, 100, 0.07) 1px, transparent 1px),
+    linear-gradient(135deg, rgba(212, 165, 165, 0.04) 0%, transparent 50%),
+    linear-gradient(315deg, rgba(196, 168, 130, 0.05) 0%, transparent 50%);
+  background-size: 22px 22px, 100% 100%, 100% 100%;
+  overflow: hidden;
+  transition: background-color 0.3s ease;
+}
+
+/* ── Título dentro del canvas (aparece en la descarga) ───── */
+.mb-canvas-title-overlay {
+  position: absolute;
+  bottom: 18px;
+  left: 22px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.mb-canvas-title-text {
+  font-family: 'Playfair Display', serif;
+  font-size: 13px;
+  font-style: italic;
+  font-weight: 400;
+  color: rgba(10, 10, 10, 0.22);
+  letter-spacing: 0.5px;
+}
+
+/* ── Estado vacío ────────────────────────────────────────── */
+.mb-empty {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  pointer-events: none;
+}
+.mb-empty-text {
+  font-family: 'Playfair Display', serif;
+  font-size: 20px;
+  font-weight: 600;
+  color: #D4C9BC;
+  margin: 0;
+  text-align: center;
+}
+.mb-empty-sub {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 11px;
+  color: #C8C0B8;
+  margin: 0;
+  text-align: center;
+}
+
+/* ── Ítems del moodboard ─────────────────────────────────── */
+.moodboard-item {
+  position: absolute;
+  cursor: move;
+  user-select: none;
+  max-width: 1000px !important;
+  max-height: 1000px !important;
+  min-width: 80px;
+  border: none;
+  padding: 0;
+  overflow: visible;
+  background: transparent;
+  box-shadow: none;
+  transition: outline 0.15s ease;
+  outline: 2px solid transparent;
+  outline-offset: 4px;
+}
+
+.moodboard-item.is-selected {
+  outline: 2px dashed rgba(196, 168, 130, 0.7);
+  z-index: 50;
+}
+
+/* ── item-inner: maneja la rotación ──────────────────────── */
+.item-inner {
+  width: 100%;
+  height: 100%;
+  transition: transform 0.25s ease;
+}
+
+/* ── Imagen ──────────────────────────────────────────────── */
+.image-item {
+  min-height: 80px;
+  .item-inner { transform-origin: center center; }
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: fill;
+    display: block;
+    pointer-events: none;
+    background: transparent;
+    border: none;
+    padding: 0;
+  }
+}
+
+/* ── Texto ───────────────────────────────────────────────── */
+.text-item {
+  cursor: move;
+  min-width: 60px;
+  min-height: 20px;
+  .item-inner {
+    transform-origin: center center;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+  }
+}
+
+.text-content {
+  font-family: 'Playfair Display', serif; /* sobreescrito por [style.font-family] en el template */
+  font-weight: 600;
+  color: #1a1a1a; /* sobreescrito por [style.color] en el template */
+  letter-spacing: 1px;
+  line-height: 1.2;
+  white-space: nowrap;
+  cursor: text;
+  outline: none;
+  display: block;
+  width: 100%;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.08);
+
+  &:focus {
+    border-bottom: 1.5px dashed rgba(196, 168, 130, 0.6);
+  }
+
+  &[contenteditable="true"]:empty::before {
+    content: 'Escribe aquí…';
+    color: rgba(10,10,10,0.25);
+    font-style: italic;
+  }
+}
+
+/* ── Handles de redimensionado ───────────────────────────── */
+.resize-handle {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: #FFFFFF;
+  border: 1.5px solid #C4A882;
+  border-radius: 2px;
+  z-index: 55;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
+
+  &.resize-nw { top: -5px;    left: -5px;   cursor: nw-resize; }
+  &.resize-ne { top: -5px;    right: -5px;  cursor: ne-resize; }
+  &.resize-sw { bottom: -5px; left: -5px;   cursor: sw-resize; }
+  &.resize-se { bottom: -5px; right: -5px;  cursor: se-resize; }
+
+  &:hover { background: #C4A882; }
+}
+
+/* ── Botones de rotación ─────────────────────────────────── */
+.rotate-controls {
+  position: absolute;
+  top: -36px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: #FFFFFF;
+  border: 1px solid #E8E2DB;
+  border-radius: 20px;
+  padding: 4px 8px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.10);
+  z-index: 60;
+  white-space: nowrap;
+}
+
+.rotate-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background: transparent;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  color: #5A5A5A;
+  padding: 0;
+  transition: background 0.15s ease, color 0.15s ease;
+  &:hover {
+    background: #F7F3EE;
+    color: #C4A882;
+  }
+}
+
+/* ── Botón eliminar ──────────────────────────────────────── */
+.delete-btn {
+  position: absolute !important;
+  top: 6px !important;
+  right: 6px !important;
+  width: 20px !important;
+  height: 20px !important;
+  background: rgba(10, 10, 10, 0.60) !important;
+  color: #FFFFFF !important;
+  border: none !important;
+  border-radius: 50% !important;
+  font-size: 9px !important;
+  cursor: pointer !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  z-index: 30 !important;
+  padding: 0 !important;
+  line-height: 1 !important;
+  margin: 0 !important;
+  box-shadow: none !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+  opacity: 0;
+  transition: opacity 0.2s ease, background 0.2s ease !important;
+}
+.moodboard-item:hover .delete-btn,
+.moodboard-item.is-selected .delete-btn { opacity: 1 !important; }
+.delete-btn:hover { background: #C4A882 !important; transform: none !important; }
+
+/* ── Topbar actions group ────────────────────────────────── */
+.mb-topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+/* ── Preview button ──────────────────────────────────────── */
+.mb-preview-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  padding: 10px 22px !important;
+  background: transparent !important;
+  color: #0A0A0A !important;
+  border: 1.5px solid #0A0A0A !important;
+  font-family: 'DM Sans', sans-serif !important;
+  font-size: 9px !important;
+  font-weight: 700 !important;
+  letter-spacing: 2px !important;
+  text-transform: uppercase !important;
+  border-radius: 8px !important;
+  cursor: pointer !important;
+  margin: 0 !important;
+  box-shadow: none !important;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+  transition: background 0.25s ease, color 0.25s ease !important;
+  &:hover { background: #0A0A0A !important; color: #FFFFFF !important; }
+}
+.mb-preview-btn--active {
+  background: #0A0A0A !important;
+  color: #FFFFFF !important;
+  &:hover { background: #C4A882 !important; }
+}
+
+/* ── Download button ─────────────────────────────────────── */
+.mb-download-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  padding: 10px 26px !important;
+  background: #0A0A0A !important;
+  color: #FFFFFF !important;
+  font-family: 'DM Sans', sans-serif !important;
+  font-size: 9px !important;
+  font-weight: 700 !important;
+  letter-spacing: 2px !important;
+  text-transform: uppercase !important;
+  border: none !important;
+  border-radius: 8px !important;
+  cursor: pointer !important;
+  margin: 0 !important;
+  box-shadow: none !important;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+  transition: background 0.25s ease !important;
+  &:hover { background: #C4A882 !important; }
+}

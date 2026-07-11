@@ -1,0 +1,124 @@
+.container {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 20px;
+}
+.image-container {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  margin-top: 40px;
+  width: 323px;
+}
+.container img {
+  max-width: 100%;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+.colors-container {
+  display: flex;
+  flex-direction: column;
+  max-width: 300px;
+  align-items: center;
+  justify-content: center;
+  margin-top: 60px;
+}
+.color-box {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+  padding: 10px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+  width: 100%;
+}
+.color-text {
+  flex: 1;
+  font-size: 16px;
+  font-weight: 500;
+  color: #333;
+}
+.color-preview {
+  width: 40px;
+  height: 40px;
+  border-radius: 4px;
+  margin-left: 15px;
+  border: 1px solid #d0d0d0;
+}
+input {
+  width: 300px;
+  padding: 10px;
+  margin-bottom: 20px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 16px;
+}
+button {
+  padding: 10px 20px;
+  background-color: #982B1C;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  margin-bottom:13px;
+}
+button:hover {
+  background-color: #388e3c;
+}
+@media (max-width: 600px) {
+  .container {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .colors-container {
+    margin-top: 20px;
+    width: 100%;
+  }
+
+  .color-box {
+    width: 100%;
+  }
+}
+.screen-body {
+  display: flex;
+}
+
+.screen-body-item {
+  flex: 1;
+  padding: 50px;
+}
+
+.screen-body-item.left {
+  display: flex;
+  flex-direction: column;
+}
+
+.container[_ngcontent-ng-c180712657] img[_ngcontent-ng-c180712657] {
+  max-width: 100%;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  padding: 10px;
+}
+
+.look-title {
+  font-family: 'Pacifico', cursive;
+  font-size: 39px;
+  color: #982B1C;
+  text-shadow: 3px 3px 0px #D0B8A8,
+               -3px 3px 0px #D0B8A8,
+               3px -3px 0px #D0B8A8,
+               -3px -3px 0px #D0B8A8,
+               0px 3px 0px #D0B8A8,
+               3px 0px 0px #D0B8A8,
+               0px -3px 0px #D0B8A8,
+               -3px 0px 0px #D0B8A8;
+  text-align: center;
+  margin-bottom: 28px;
+  margin-top: 19px;
+}

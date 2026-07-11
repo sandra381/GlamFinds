@@ -1,0 +1,142 @@
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<div class="container" style="width:100%;height:100%;">
+  <div class="content" style="width:100%;height:100%;">
+    <mat-drawer-container style="width:100%;height:100%;">
+      <mat-drawer mode="side" opened><app-menu></app-menu></mat-drawer>
+      <mat-drawer-content><app-menu2></app-menu2>
+        <section class="app-content">
+
+<div class="outfit-container">
+
+  <div class="outfit-header">
+    <span class="outfit-tag">Generador de Looks</span>
+    <h2 class="outfit-title">Outfit IA</h2>
+    <div class="outfit-title-line"></div>
+  </div>
+
+  <div class="outfit-filters">
+    <div class="outfit-filter-group">
+      <label class="outfit-filter-label">Ocasión</label>
+      <select class="outfit-select" [(ngModel)]="ocasionSeleccionada">
+        <option *ngFor="let o of ocasiones" [value]="o">{{ o }}</option>
+      </select>
+    </div>
+
+    <div class="outfit-filter-group">
+      <label class="outfit-filter-label">Clima</label>
+      <select class="outfit-select" [(ngModel)]="climaSeleccionado">
+        <option *ngFor="let c of climas" [value]="c">{{ c }}</option>
+      </select>
+    </div>
+
+    <div class="outfit-filter-group outfit-filter-group--colores">
+      <label class="outfit-filter-label">Colores favoritos (opcional)</label>
+      <div class="outfit-colores">
+        <button
+          type="button"
+          class="outfit-color-chip"
+          *ngFor="let color of coloresDisponibles"
+          [class.outfit-color-chip--activo]="colorSeleccionado(color)"
+          (click)="toggleColor(color)">
+          {{ color }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="outfit-actions-top">
+    <button class="outfit-button" (click)="generarOutfit()" [disabled]="cargando">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="23 4 23 10 17 10"/>
+        <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+      </svg>
+      {{ cargando ? 'Generando...' : 'Generar Outfit' }}
+    </button>
+  </div>
+
+  <div class="outfit-error" *ngIf="errorMensaje">{{ errorMensaje }}</div>
+
+  <div class="outfit-loading" *ngIf="cargando">
+    <div class="outfit-skeleton" *ngFor="let i of [1,2,3,4]"></div>
+  </div>
+
+  <ng-container *ngIf="outfit && !cargando">
+    <div class="outfit-items">
+
+      <div class="outfit-item" *ngIf="outfit.top?.imagen">
+        <span class="outfit-item-type">Top</span>
+        <div class="outfit-item-img-wrap">
+          <img [src]="outfit.top.imagen.url" [alt]="outfit.top.descripcion">
+        </div>
+        <h4>{{ outfit.top.descripcion }}</h4>
+        <span class="outfit-item-credito">Foto: {{ outfit.top.imagen.fotografo }} / Pexels</span>
+      </div>
+      <div class="outfit-item outfit-item--vacio" *ngIf="!outfit.top?.imagen">
+        <span class="outfit-item-type">Top</span>
+        <div class="outfit-item-img-wrap outfit-item-img-wrap--vacio">Sin imagen disponible</div>
+        <h4>{{ outfit.top?.descripcion }}</h4>
+      </div>
+
+      <div class="outfit-item" *ngIf="outfit.bottom?.imagen">
+        <span class="outfit-item-type">Pantalón</span>
+        <div class="outfit-item-img-wrap">
+          <img [src]="outfit.bottom.imagen.url" [alt]="outfit.bottom.descripcion">
+        </div>
+        <h4>{{ outfit.bottom.descripcion }}</h4>
+        <span class="outfit-item-credito">Foto: {{ outfit.bottom.imagen.fotografo }} / Pexels</span>
+      </div>
+      <div class="outfit-item outfit-item--vacio" *ngIf="!outfit.bottom?.imagen">
+        <span class="outfit-item-type">Pantalón</span>
+        <div class="outfit-item-img-wrap outfit-item-img-wrap--vacio">Sin imagen disponible</div>
+        <h4>{{ outfit.bottom?.descripcion }}</h4>
+      </div>
+
+      <div class="outfit-item" *ngIf="outfit.shoes?.imagen">
+        <span class="outfit-item-type">Zapatos</span>
+        <div class="outfit-item-img-wrap">
+          <img [src]="outfit.shoes.imagen.url" [alt]="outfit.shoes.descripcion">
+        </div>
+        <h4>{{ outfit.shoes.descripcion }}</h4>
+        <span class="outfit-item-credito">Foto: {{ outfit.shoes.imagen.fotografo }} / Pexels</span>
+      </div>
+      <div class="outfit-item outfit-item--vacio" *ngIf="!outfit.shoes?.imagen">
+        <span class="outfit-item-type">Zapatos</span>
+        <div class="outfit-item-img-wrap outfit-item-img-wrap--vacio">Sin imagen disponible</div>
+        <h4>{{ outfit.shoes?.descripcion }}</h4>
+      </div>
+
+      <div class="outfit-item" *ngIf="outfit.accessory?.imagen">
+        <span class="outfit-item-type">Accesorio</span>
+        <div class="outfit-item-img-wrap">
+          <img [src]="outfit.accessory.imagen.url" [alt]="outfit.accessory.descripcion">
+        </div>
+        <h4>{{ outfit.accessory.descripcion }}</h4>
+        <span class="outfit-item-credito">Foto: {{ outfit.accessory.imagen.fotografo }} / Pexels</span>
+      </div>
+      <div class="outfit-item outfit-item--vacio" *ngIf="!outfit.accessory?.imagen">
+        <span class="outfit-item-type">Accesorio</span>
+        <div class="outfit-item-img-wrap outfit-item-img-wrap--vacio">Sin imagen disponible</div>
+        <h4>{{ outfit.accessory?.descripcion }}</h4>
+      </div>
+
+    </div>
+
+    <div class="outfit-reason" *ngIf="outfit.reason">
+      <span class="outfit-reason-label">Por qué este outfit</span>
+      <p>{{ outfit.reason }}</p>
+    </div>
+
+    <div class="outfit-actions">
+      <button class="outfit-button outfit-button--secundario" (click)="guardarOutfit()">
+        Guardar Outfit
+      </button>
+    </div>
+  </ng-container>
+
+</div>
+
+        </section>
+      </mat-drawer-content>
+    </mat-drawer-container>
+  </div>
+</div>

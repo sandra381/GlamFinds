@@ -1,0 +1,218 @@
+<div class="container" style="width:100%;height:100%;">
+  <div class="content" style="width:100%;height:100%;">
+    <mat-drawer-container style="width:100%;height:100%;">
+      <mat-drawer mode="side" opened><app-menu></app-menu></mat-drawer>
+      <mat-drawer-content><app-menu2></app-menu2>
+
+        <div class="fondo">
+
+          <!-- ── Sección header (max-width limitado) ────────── -->
+          <div class="fondo-profile">
+
+            <!-- Toggle oculto (CSS-only) -->
+            <input type="checkbox" id="edit-toggle" class="edit-toggle-check">
+
+            <!-- ── Header estilo Instagram ─────────────────── -->
+            <div class="profile-header">
+
+              <!-- Foto izquierda -->
+              <div class="ph-avatar-col">
+                <div class="avatar-ring">
+                  <img *ngIf="imgUrl" [src]="imgUrl" class="avatar-img" alt="foto">
+                  <img *ngIf="!imgUrl && posts_generales.imagen"
+                       [src]="'assets/img/' + posts_generales.imagen"
+                       class="avatar-img" alt="foto">
+                  <div *ngIf="!imgUrl && !posts_generales.imagen" class="avatar-placeholder">
+                    <svg width="44" height="44" viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="1.2" stroke-linecap="round">
+                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                      <circle cx="12" cy="7" r="4"/>
+                    </svg>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Info derecha -->
+              <div class="ph-info-col">
+
+                <!-- Fila: nombre + botón editar -->
+                <div class="ph-top-row">
+                  <h1 class="ph-username">{{ posts_generales.usuario || 'usuario' }}</h1>
+                  <label for="edit-toggle" class="btn-edit-profile">Editar perfil</label>
+                </div>
+
+                <!-- Estadísticas -->
+                <div class="ph-stats">
+                  <div class="ph-stat">
+                    <span class="ph-stat-num">{{ postsCount }}</span>
+                    <span class="ph-stat-label">publicaciones</span>
+                  </div>
+                  <div class="ph-stat">
+                    <span class="ph-stat-num">{{ followersCount }}</span>
+                    <span class="ph-stat-label">seguidores</span>
+                  </div>
+                  <div class="ph-stat">
+                    <span class="ph-stat-num">{{ followingCount }}</span>
+                    <span class="ph-stat-label">siguiendo</span>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+            <!-- ── Descripción ─────────────────────────────── -->
+            <p class="ph-bio">{{ posts_generales.descripcion }}</p>
+
+            <!-- ── Modal de edición ────────────────────────── -->
+            <div class="edit-form-panel">
+              <!-- Fondo oscuro: clic cierra el modal -->
+              <label for="edit-toggle" class="edit-modal-backdrop"></label>
+
+              <!-- Caja del modal -->
+              <div class="edit-modal-box">
+
+                <!-- Cabecera del modal -->
+                <div class="edit-modal-header">
+                  <p class="edit-form-title">Editar perfil</p>
+                  <label for="edit-toggle" class="edit-modal-close">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                      <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                  </label>
+                </div>
+
+                <!-- ── Foto de perfil circular (estilo Instagram) ── -->
+                <div class="edit-avatar-section">
+                  <label class="edit-avatar-wrap" for="edit-avatar-input">
+                    <!-- Imagen actual o preview -->
+                    <img *ngIf="imgUrl" [src]="imgUrl" class="edit-avatar-img" alt="foto">
+                    <img *ngIf="!imgUrl && posts_generales.imagen"
+                         [src]="'assets/img/' + posts_generales.imagen"
+                         class="edit-avatar-img" alt="foto">
+                    <div *ngIf="!imgUrl && !posts_generales.imagen" class="edit-avatar-fallback">
+                      <svg width="36" height="36" viewBox="0 0 24 24" fill="none"
+                           stroke="currentColor" stroke-width="1.2" stroke-linecap="round">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                        <circle cx="12" cy="7" r="4"/>
+                      </svg>
+                    </div>
+                    <!-- Overlay cámara al hover -->
+                    <div class="edit-avatar-overlay">
+                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
+                           stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+                        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                        <circle cx="12" cy="13" r="4"/>
+                      </svg>
+                      <span>Cambiar</span>
+                    </div>
+                    <input id="edit-avatar-input" type="file" (change)="imagenSelect($event)" hidden>
+                  </label>
+                </div>
+
+                <div class="edit-fields">
+
+                  <mat-form-field class="edit-field" appearance="outline">
+                    <mat-label>Usuario</mat-label>
+                    <input [(ngModel)]="posts_generales.usuario" type="text" matInput>
+                  </mat-form-field>
+
+                  <mat-form-field class="edit-field" appearance="outline">
+                    <mat-label>Descripción</mat-label>
+                    <textarea [(ngModel)]="posts_generales.descripcion" matInput rows="3"></textarea>
+                  </mat-form-field>
+
+                  <div class="edit-btn-row">
+                    <button class="btn-guardar" (click)="guardarModificar()">Guardar cambios</button>
+                    <label for="edit-toggle" class="btn-cancelar">Cancelar</label>
+                  </div>
+
+                </div>
+              </div><!-- /edit-modal-box -->
+            </div><!-- /edit-form-panel -->
+
+          </div><!-- /fondo-profile -->
+
+          <!-- ── Tabs: PUBLICACIONES / ARTÍCULOS ───────────── -->
+          <div class="custom-tabs">
+
+            <!-- Tab header -->
+            <div class="custom-tabs-header">
+              <span class="custom-tab-label" [class.active]="activeTab==='publicaciones'" (click)="activeTab='publicaciones'">PUBLICACIONES</span>
+              <span class="custom-tab-label" [class.active]="activeTab==='articulos'"     (click)="activeTab='articulos'">ARTÍCULOS</span>
+            </div>
+
+            <!-- Tab body -->
+            <div class="custom-tabs-body">
+
+              <!-- ── Tab 1: PUBLICACIONES ─────────────────── -->
+              <div class="tab-pane" [class.tab-hidden]="activeTab!=='publicaciones'">
+                <div class="tab-content">
+                  <div class="post-grid" *ngIf="dataSource.length > 0; else noPublicaciones">
+                    <div class="post-item" *ngFor="let post of dataSource">
+                      <div class="post-card">
+                        <div class="post-card-media">
+                          <ng-container *ngIf="isImage(post.imagen); else postVideoED">
+                            <img class="post-card-img" [src]="'assets/img/' + post.imagen" [alt]="post.descripcion" loading="lazy">
+                          </ng-container>
+                          <ng-template #postVideoED>
+                            <video class="post-card-img" autoplay [muted]="true" loop playsinline>
+                              <source [src]="'assets/img/' + post.imagen" type="video/mp4">
+                            </video>
+                          </ng-template>
+                        </div>
+                        <div class="post-card-body">
+                          <p class="post-card-desc">{{ post.descripcion }}</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <ng-template #noPublicaciones>
+                    <div class="ed-empty-state">
+                      <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#C8C0B8" stroke-width="1.4" stroke-linecap="round">
+                        <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
+                      </svg>
+                      <p>Aún no tienes publicaciones</p>
+                    </div>
+                  </ng-template>
+                </div>
+              </div>
+
+              <!-- ── Tab 2: ARTÍCULOS ─────────────────────── -->
+              <div class="tab-pane" [class.tab-hidden]="activeTab!=='articulos'">
+                <div class="tab-content">
+                  <div class="article-grid" *ngIf="dataSource5.length > 0; else noArticulos">
+                    <div class="p-art-card" *ngFor="let art of dataSource5">
+                      <div class="p-art-cover">
+                        <img *ngIf="art.imagen" class="p-art-img"
+                             [src]="art.imagen.startsWith('http') ? art.imagen : 'assets/img/' + (art.imagen.includes('assets/img/') ? art.imagen.split('assets/img/')[1] : art.imagen)"
+                             [alt]="art.titulo" loading="lazy">
+                        <div class="p-art-placeholder" *ngIf="!art.imagen">
+                          <span class="p-art-mono">GF</span>
+                        </div>
+                      </div>
+                      <div class="p-art-body">
+                        <h3 class="p-art-title">{{ art.titulo }}</h3>
+                      </div>
+                    </div>
+                  </div>
+                  <ng-template #noArticulos>
+                    <div class="ed-empty-state">
+                      <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#C8C0B8" stroke-width="1.4" stroke-linecap="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
+                      </svg>
+                      <p>Aún no hay artículos</p>
+                    </div>
+                  </ng-template>
+                </div>
+              </div>
+
+            </div><!-- /custom-tabs-body -->
+          </div><!-- /custom-tabs -->
+
+        </div><!-- /fondo -->
+
+      </mat-drawer-content>
+    </mat-drawer-container>
+  </div>
+</div>

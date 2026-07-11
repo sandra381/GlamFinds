@@ -1,0 +1,170 @@
+<app-menu3></app-menu3>
+
+<div class="container">
+  <form>
+    <div class="screen">
+      <div class="screen-body">
+
+        <!-- ═══════════════════════════════════════════════
+             SECCIÓN 1 — Post General
+             ─── Preview (izquierda) ─── -->
+        <div class="screen-body-item left">
+          <div class="app-title">
+            <span class="section-tag">Nueva Publicación</span>
+            <p class="section-sub">Vista previa de imagen</p>
+            <div class="preview-box" *ngIf="imgUrl; else noPreview1">
+              <img [src]="imgUrl" alt="Imagen Subida">
+            </div>
+            <ng-template #noPreview1>
+              <div class="preview-placeholder">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#C4A882" stroke-width="1.2">
+                  <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/>
+                  <polyline points="21 15 16 10 5 21"/>
+                </svg>
+                <p>Sin imagen</p>
+              </div>
+            </ng-template>
+          </div>
+        </div>
+
+        <!-- ─── Formulario 1 (derecha) ─── -->
+        <div class="screen-body-item">
+          <div class="form-section-header">
+            <span class="form-section-tag">Post General</span>
+          </div>
+          <div class="row" [formGroup]="formGroups">
+            <div class="app-form">
+
+              <label class="field-label">Descripción</label>
+              <textarea
+                placeholder="Escribe una descripción..."
+                class="app-form-control"
+                formControlName="descripcion"
+                rows="4"
+              ></textarea>
+
+              <label class="field-label">Imagen</label>
+              <label class="file-upload-label">
+                <input
+                  type="file"
+                  class="app-form-control file-input"
+                  formControlName="imagen"
+                  accept="imagen"
+                  (change)="imagenSelect($event)"
+                >
+                <span class="file-upload-text">Seleccionar archivo</span>
+                <span class="file-upload-icon">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+                  </svg>
+                </span>
+              </label>
+
+              <label class="field-label">Categoría</label>
+              <div class="select-wrapper">
+                <select formControlName="categoria" class="app-form-control">
+                  <option value="1">Tendencias</option>
+                  <option value="2">Ropa</option>
+                  <option value="3">Maquillaje</option>
+                  <option value="4">Accesorios</option>
+                  <option value="5">Zapatos</option>
+                </select>
+              </div>
+
+              <div class="app-form-group buttons">
+                <button type="button" class="app-form-button" (click)="guardarPostsG()">
+                  Publicar
+                </button>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════
+             SECCIÓN 2 — Post Publicidad
+             ─── Preview (izquierda) ─── -->
+        <div class="screen-body-item left">
+          <div class="app-title">
+            <span class="section-tag">Nueva Publicidad</span>
+            <p class="section-sub">Vista previa de imagen</p>
+            <div class="preview-box" *ngIf="imgUrl2; else noPreview2">
+              <img [src]="imgUrl2" alt="Imagen Subida">
+            </div>
+            <ng-template #noPreview2>
+              <div class="preview-placeholder">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#C4A882" stroke-width="1.2">
+                  <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/>
+                  <polyline points="21 15 16 10 5 21"/>
+                </svg>
+                <p>Sin imagen</p>
+              </div>
+            </ng-template>
+          </div>
+        </div>
+
+        <!-- ─── Formulario 2 (derecha) ─── -->
+        <div class="screen-body-item">
+          <div class="form-section-header">
+            <span class="form-section-tag">Post Publicidad</span>
+          </div>
+          <div class="row" [formGroup]="formGroups2">
+            <div class="app-form">
+
+              <label class="field-label">Descripción</label>
+              <textarea
+                placeholder="Escribe una descripción..."
+                class="app-form-control"
+                formControlName="descripcion"
+                rows="4"
+              ></textarea>
+
+              <label class="field-label">Imagen</label>
+              <label class="file-upload-label">
+                <input
+                  type="file"
+                  class="app-form-control file-input"
+                  formControlName="imagen"
+                  accept="imagen"
+                  (change)="imagenSelectP($event)"
+                >
+                <span class="file-upload-text">Seleccionar archivo</span>
+                <span class="file-upload-icon">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+                  </svg>
+                </span>
+              </label>
+
+              <label class="field-label">Link</label>
+              <input
+                type="text"
+                placeholder="https://..."
+                class="app-form-control"
+                formControlName="link"
+              >
+
+              <label class="field-label">Categoría</label>
+              <div class="select-wrapper">
+                <select formControlName="categoria" class="app-form-control">
+                  <option value="6">Descuentos</option>
+                  <option value="7">Dups</option>
+                </select>
+              </div>
+
+              <div class="app-form-group buttons">
+                <button type="button" class="app-form-button" (click)="guardarPublicidad()">
+                  Publicar
+                </button>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /screen-body -->
+    </div><!-- /screen -->
+  </form>
+</div>

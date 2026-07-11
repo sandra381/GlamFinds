@@ -1,0 +1,363 @@
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<div class="container" style="width:100%;height:100%;">
+  <div class="content" style="width:100%;height:100%;">
+    <mat-drawer-container style="width:100%;height:100%;">
+      <mat-drawer mode="side" opened><app-menu></app-menu></mat-drawer>
+      <mat-drawer-content><app-menu2></app-menu2>
+        <section class="app-content">
+
+          <!-- ── Filter bar (preserved) ─────────── -->
+          <div class="selectors">
+            <div class="color-selector">
+              <div class="filters">
+                <a class="button button--dress" (click)="toggleModal()">
+                  <div class="button__wrapper">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+                    <span class="button__text">Color</span>
+                  </div>
+                </a>
+              </div>
+              <div id="colorModal" class="color-modal" [ngClass]="{'show': isModalOpen}">
+                <div class="color-modal-content">
+                  <span class="close" (click)="toggleModal()">&times;</span>
+                  <div class="color-grid">
+                    <div class="color-box yellow"  (click)="seleccionarPorRango('amarillo')"><span>AMARILLO</span></div>
+                    <div class="color-box beige"   (click)="seleccionarPorRango('beige')"><span>BEIGE</span></div>
+                    <div class="color-box white"   (click)="seleccionarPorRango('blanco')"><span>BLANCO</span></div>
+                    <div class="color-box brown"   (click)="seleccionarPorRango('marron')"><span>MARRÓN</span></div>
+                    <div class="color-box purple"  (click)="seleccionarPorRango('morado')"><span>MORADO</span></div>
+                    <div class="color-box orange"  (click)="seleccionarPorRango('naranja')"><span>NARANJA</span></div>
+                    <div class="color-box black"   (click)="seleccionarPorRango('negro')"><span>NEGRO</span></div>
+                    <div class="color-box grey"    (click)="seleccionarPorRango('gris')"><span>GRIS</span></div>
+                    <div class="color-box red"     (click)="seleccionarPorRango('rojo')"><span>ROJO</span></div>
+                    <div class="color-box pink"    (click)="seleccionarPorRango('rosa')"><span>ROSA</span></div>
+                    <div class="color-box green"   (click)="seleccionarPorRango('verde')"><span>VERDE</span></div>
+                    <div class="color-box blue"    (click)="seleccionarPorRango('azul')"><span>AZUL</span></div>
+                  </div>
+                  <div class="actions"><button class="clear-btn" (click)="limpiarFiltro()">LIMPIAR</button></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="clothes-selector">
+              <div class="filters">
+                <a class="button button--dress" (click)="toggleModal2()">
+                  <div class="button__wrapper">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.38 3.46L16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.57a1 1 0 0 0 .99.86H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.86l.58-3.57a2 2 0 0 0-1.34-2.23z"/></svg>
+                    <span class="button__text">Prenda</span>
+                  </div>
+                </a>
+              </div>
+              <div id="colorModal" class="color-modal" [ngClass]="{'show': isModalOpen2}">
+                <div class="color-modal-content">
+                  <span class="close" (click)="toggleModal2()">&times;</span>
+                  <div class="clothes-grid">
+                    <div class="color-box bag"           (click)="seleccionarPorRopa('bag')"><span>BOLSA</span></div>
+                    <div class="color-box belt"          (click)="seleccionarPorRopa('belt')"><span>CINTURÓN</span></div>
+                    <div class="color-box bowtie"        (click)="seleccionarPorRopa('bowtie')"><span>MOÑO</span></div>
+                    <div class="color-box bracelet"      (click)="seleccionarPorRopa('bracelet')"><span>PULSERA</span></div>
+                    <div class="color-box dress"         (click)="seleccionarPorRopa('dress')"><span>VESTIDO</span></div>
+                    <div class="color-box earrings"      (click)="seleccionarPorRopa('earrings')"><span>ARETES</span></div>
+                    <div class="color-box glasses"       (click)="seleccionarPorRopa('glasses')"><span>LENTES</span></div>
+                    <div class="color-box gloves"        (click)="seleccionarPorRopa('gloves')"><span>GUANTES</span></div>
+                    <div class="color-box hair-clip"     (click)="seleccionarPorRopa('hair clip')"><span>CLIP</span></div>
+                    <div class="color-box hat"           (click)="seleccionarPorRopa('hat')"><span>SOMBRERO</span></div>
+                    <div class="color-box headband"      (click)="seleccionarPorRopa('headband')"><span>DIADEMA</span></div>
+                    <div class="color-box hosiery"       (click)="seleccionarPorRopa('hosiery')"><span>MEDIA</span></div>
+                    <div class="color-box jumpsuit"      (click)="seleccionarPorRopa('jumpsuit')"><span>MONO</span></div>
+                    <div class="color-box mittens"       (click)="seleccionarPorRopa('mittens')"><span>MITONES</span></div>
+                    <div class="color-box necklace"      (click)="seleccionarPorRopa('necklace')"><span>COLLAR</span></div>
+                    <div class="color-box necktie"       (click)="seleccionarPorRopa('necktie')"><span>CORBATA</span></div>
+                    <div class="color-box outerwear"     (click)="seleccionarPorRopa('outerwear')"><span>ABRIGO</span></div>
+                    <div class="color-box pants"         (click)="seleccionarPorRopa('pants')"><span>PANTALÓN</span></div>
+                    <div class="color-box pin-brooch"    (click)="seleccionarPorRopa('pin/brooch')"><span>PIN</span></div>
+                    <div class="color-box pocket-square" (click)="seleccionarPorRopa('pocket square')"><span>PAÑUELO</span></div>
+                    <div class="color-box ring"          (click)="seleccionarPorRopa('ring')"><span>ANILLO</span></div>
+                    <div class="color-box romper"        (click)="seleccionarPorRopa('romper')"><span>ROMPER</span></div>
+                    <div class="color-box scarf"         (click)="seleccionarPorRopa('scarf')"><span>BUFANDA</span></div>
+                    <div class="color-box shoes"         (click)="seleccionarPorRopa('shoes')"><span>ZAPATOS</span></div>
+                    <div class="color-box shorts"        (click)="seleccionarPorRopa('shorts')"><span>SHORTS</span></div>
+                    <div class="color-box skirt"         (click)="seleccionarPorRopa('skirt')"><span>FALDA</span></div>
+                    <div class="color-box socks"         (click)="seleccionarPorRopa('socks')"><span>CALCETINES</span></div>
+                    <div class="color-box sunglasses"    (click)="seleccionarPorRopa('sunglasses')"><span>GAFAS SOL</span></div>
+                    <div class="color-box suspenders"    (click)="seleccionarPorRopa('suspenders')"><span>TIRANTES</span></div>
+                    <div class="color-box swimwear"      (click)="seleccionarPorRopa('swimwear')"><span>BAÑO</span></div>
+                    <div class="color-box tie-clip"      (click)="seleccionarPorRopa('tie clip')"><span>PASADOR</span></div>
+                    <div class="color-box top"           (click)="seleccionarPorRopa('top')"><span>BLUSA</span></div>
+                    <div class="color-box vest"          (click)="seleccionarPorRopa('vest')"><span>CHALECO</span></div>
+                    <div class="color-box watch"         (click)="seleccionarPorRopa('watch')"><span>RELOJ</span></div>
+                  </div>
+                  <div class="actions"><button class="clear-btn" (click)="limpiarFiltro()">LIMPIAR</button></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="feed-chips">
+              <span class="feed-chip" [ngClass]="{'feed-chip--active': activeChip === 'Todo'}"(click)="filtrarChip('Todo')">Todo</span>
+              <span *ngFor="let cat of categorias" class="feed-chip" [ngClass]="{'feed-chip--active': activeChip === cat.name_categoria}"(click)="filtrarChip(cat.name_categoria)">
+                {{ cat.name_categoria }}</span>
+            </div>
+
+
+
+          </div>
+
+          <!-- ── Skeleton screens (while loading) ─────────── -->
+          <div class="skeleton-grid" *ngIf="dataSource.length === 0 && filteredItems.length === 0">
+            <div class="sk-card" *ngFor="let s of [1,2,3,4,5,6]">
+              <div class="skeleton sk-img"></div>
+              <div class="sk-body">
+                <div class="skeleton sk-avatar"></div>
+                <div class="sk-lines">
+                  <div class="skeleton sk-line sk-line--w70"></div>
+                  <div class="skeleton sk-line sk-line--w45"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ── Masonry feed (dynamic garments integrated) ── -->
+          <ul class="projects" *ngIf="dataSource.length > 0 || filteredItems.length > 0">
+            <ng-container *ngFor="let articulo of filteredItems.length > 0 ? filteredItems : dataSource; let i = index">
+              <div class="containers">
+
+                <!-- CSS modal trigger -->
+                <input type="checkbox" [id]="'p'+articulo.id_post" class="modal-toggle">
+
+                <!-- ── CARD (Pinterest style) ─────────────────────── -->
+                <div class="pin-card">
+
+                  <!-- Image area -->
+                  <div class="pin-media">
+
+                    <!-- Category badge top-left -->
+                    <span class="badge" [ngClass]="getBadgeClass(articulo.name_categoria)">
+                        {{ articulo.name_categoria || 'Sin categoría' }}
+                    </span>
+
+                    <!-- Hover overlay (CSS only) -->
+                    <div class="pin-overlay"></div>
+
+                    <!-- Clickable image → opens modal -->
+                    <label [for]="'p'+articulo.id_post" class="pin-media-label">
+                      <ng-container *ngIf="isImage(articulo.imagen); else cardVid">
+                        <img class="pin-img" [src]="'assets/img/'+articulo.imagen" alt="post" loading="lazy">
+                      </ng-container>
+                      <ng-template #cardVid>
+                        <video class="pin-img pin-img--video" autoplay [muted]="true" loop playsinline>
+                          <source [src]="'assets/img/'+articulo.imagen" type="video/mp4">
+                          <source [src]="'assets/img/'+articulo.imagen" type="video/webm">
+                        </video>
+                      </ng-template>
+                    </label>
+
+                    <!-- 🔥 DYNAMIC GARMENT CIRCLES (bottom‑right) 🔥 -->
+                    <div class="hotspot-group" *ngIf="articulo.prendas && articulo.prendas.length">
+                      <a *ngFor="let prenda of articulo.prendas | slice:0:3; let idx = index"
+                         [href]="getSearchUrl(prenda, articulo)"
+                         class="hotspot"
+                         target="_blank"
+                         rel="noopener noreferrer"
+                         [title]="prenda.label + ' (' + (prenda.confidence | number:'1.0-0') + '%)'">
+                         {{ idx + 1 }}
+                      </a>
+                    </div>
+                  </div>
+
+                  <!-- Text footer -->
+                  <div class="pin-footer">
+                    <p class="pin-desc">{{articulo.descripcion}}</p>
+                    <div class="pin-bottom-row">
+                      <div class="pin-user" [routerLink]="['/perfil', articulo.id_user]">
+                        <img class="pin-avatar" src="assets/img/{{perfil[articulo.id_user]?.imagen}}" loading="lazy" alt="avatar">
+                        <span class="pin-username">{{articulo.usuario}}</span>
+                      </div>
+                      <div class="pin-likes">
+                        <button class="pin-like-btn" (click)="like(articulo.id_post, i)">
+                          <mat-icon [ngClass]="toggle[i] ? 'heart-active' : 'heart-inactive'">favorite</mat-icon>
+                        </button>
+                        <span class="pin-likes-count">{{likes[articulo.id_post]?.cantidad || 0}}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- ── MODAL (expanded view) ────────────────────────── -->
+                <div class="post-modal">
+                  <label [for]="'p'+articulo.id_post" class="modal-backdrop"></label>
+
+                  <div class="modal-box">
+
+                    <!-- LEFT: image + dynamic garment buttons -->
+                    <div class="modal-left" [ngClass]="'cat-bg-'+(i%4)">
+
+                      <!-- Main media (image or video) -->
+                      <ng-container *ngIf="isImage(articulo.imagen); else modalVid">
+                        <div class="modal-img-wrap" style="position: relative;">
+                          <img [src]="'assets/img/'+articulo.imagen" alt="post" class="modal-img" loading="lazy"
+                              (load)="onImageLoad($event, articulo)">
+                          <ng-container *ngIf="articulo.prendas && articulo.prendas.length">
+                            <ng-container *ngFor="let prenda of articulo.prendas | slice:0:6">
+                              <a *ngIf="prenda.bbox && prenda.bbox.length === 4"
+                                [href]="getSearchUrl(prenda, articulo)"
+                                class="buttons garment-btn"
+                                [ngClass]="getButtonClass(prenda.label)"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                [style.top]="getTopPosition(prenda.bbox, articulo)"
+                                [style.left]="getLeftPosition(prenda.bbox, articulo)"
+                                [style.position]="'absolute'"
+                                [title]="prenda.label + ' (' + (prenda.confidence | number:'1.0-0') + '%)'">
+                                🔗
+                              </a>
+                            </ng-container>
+                          </ng-container>
+                      </div>
+                      </ng-container>
+
+
+                      <ng-template #modalVid>
+                        <video class="modal-vid" autoplay [muted]="true" loop playsinline controls width="100%">
+                          <source [src]="'assets/img/'+articulo.imagen" type="video/mp4">
+                          <source [src]="'assets/img/'+articulo.imagen" type="video/webm">
+                        </video>
+                      </ng-template>
+
+                      <!-- 🔥 DYNAMIC TAGGED ITEMS (list below image) 🔥 -->
+                      <div class="tagged-section" *ngIf="articulo.prendas && articulo.prendas.length">
+                        <p class="tagged-title">PRENDAS ETIQUETADAS</p>
+                        <div class="tagged-list">
+                          <a *ngFor="let prenda of articulo.prendas | slice:0:6"
+                             [href]="getSearchUrl(prenda, articulo)"
+                             target="_blank"
+                             class="tagged-pill"
+                             rel="noopener noreferrer">
+                            {{ prenda.label }}
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- RIGHT: info panel (unchanged) -->
+                    <div class="modal-right">
+
+                      <!-- Header: avatar + name + follow + close X -->
+                      <div class="modal-header-row">
+                        <img class="modal-avatar" src="assets/img/{{perfil[articulo.id_user]?.imagen}}" loading="lazy" alt="avatar">
+                        <div class="modal-user-info">
+                          <span class="modal-username">
+                            {{articulo.usuario}}
+                            <span class="verified-check">✓</span>
+                          </span>
+                          <span class="modal-location">
+                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                            Ciudad de Guatemala
+                          </span>
+                        </div>
+                        <button class="follow-btn">+ Seguir</button>
+                        <label [for]="'p'+articulo.id_post" class="modal-close-x">
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                        </label>
+                      </div>
+
+                      <!-- Scrollable body -->
+                      <div class="modal-scroll">
+
+                        <!-- Description -->
+                        <p class="modal-desc">{{articulo.descripcion}}</p>
+
+                        <!-- Stats row -->
+                        <div class="modal-stats">
+                          <button mat-icon-button (click)="like(articulo.id_post, i)" class="stat-icon-btn">
+                            <mat-icon [ngClass]="toggle[i] ? 'heart-active' : 'heart-inactive'">favorite</mat-icon>
+                          </button>
+                          <span class="modal-count">{{likes[articulo.id_post]?.cantidad || 0}}</span>
+                          <button mat-icon-button class="stat-icon-btn">
+                            <mat-icon>comment</mat-icon>
+                          </button>
+                          <span class="modal-count">{{comentarios[articulo.id_post]?.length || 0}}</span>
+                          <div class="modal-stats-right">
+                            <button (click)="save(articulo.id_post, i)"
+                                    [ngClass]="{'negro':!toggle1[i],'yellow':toggle1[i]}"
+                                    class="action-pill">
+                              <mat-icon style="font-size:15px;height:15px;width:15px;vertical-align:middle">bookmark</mat-icon>
+                              Guardar
+                            </button>
+                          </div>
+                        </div>
+
+                        <hr class="modal-divider">
+
+                        <!-- Comments section header -->
+                        <div class="modal-comments-header">
+                          <span class="modal-comments-title">Comentarios</span>
+                          <span class="modal-comments-count">{{comentarios[articulo.id_post]?.length || 0}}</span>
+                        </div>
+
+                        <!-- Empty state -->
+                        <p class="modal-empty-comments" *ngIf="!(comentarios[articulo.id_post]?.length)">
+                          Sé el primero en comentar ✨
+                        </p>
+
+                        <!-- Comments list -->
+                        <div class="modal-comments">
+                          <div class="mc-item" *ngFor="let val of comentarios[articulo.id_post] || []">
+                            <div class="mc-avatar-circle">{{val.usuario?.[0]?.toUpperCase() || 'U'}}</div>
+                            <div class="mc-body">
+                              <div class="mc-top">
+                                <span class="mc-username">{{val.usuario}}</span>
+                                <span class="mc-text">{{val.comments}}</span>
+                              </div>
+                              <div class="mc-actions">
+                                <button class="mc-reply-btn" (click)="replyTo(val.usuario, articulo.id_post)">Responder</button>
+                                <div class="mc-edit" *ngIf="val.navegante === usuariolog">
+                                  <button class="action-button" (click)="openMod(articulo.id_post, val.id_comment)">
+                                    <img class="imgs" src="https://cdn-icons-png.flaticon.com/512/1159/1159633.png">
+                                  </button>
+                                  <button class="action-button" (click)="deleteComment(articulo.id_post, val.id_comment)">
+                                    <img class="imgs" src="https://cdn-icons-png.flaticon.com/512/88/88666.png">
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                      </div><!-- /modal-scroll -->
+
+                      <!-- Comment input pinned bottom -->
+                      <div class="modal-input-wrap">
+
+                        <!-- Emoji picker panel -->
+                        <div class="emoji-panel" *ngIf="showEmojiPicker[articulo.id_post]">
+                          <button class="emoji-btn-item" *ngFor="let e of ['💅','👗','👠','👜','✨','🌸','💕','🔥','👒','💋','🛍️','🪞','💄','👛','🧣','🕶️','💍','🌷','🦋','⭐','😍','🤩','😊','😂','❤️','💯','🙌','👏','😘','🫶']"
+                                  (click)="insertEmoji(e, articulo.id_post)">{{e}}</button>
+                        </div>
+
+                        <div class="modal-input-row">
+                          <img class="modal-input-avatar" *ngIf="user.imagen" src="assets/img/{{user.imagen}}" alt="avatar">
+                          <span class="modal-input-initials" *ngIf="!user.imagen">{{user.nombre ? user.nombre[0] : 'U'}}</span>
+                          <button class="emoji-toggle-btn" (click)="toggleEmojiPicker(articulo.id_post)" type="button">😊</button>
+                          <input [(ngModel)]="comentario[articulo.id_post]"
+                                 [id]="'comment-input-' + articulo.id_post"
+                                 type="text"
+                                 placeholder="Añade un comentario..."
+                                 class="modal-input"
+                                 (keydown.enter)="comment(articulo.id_post)">
+                          <button class="modal-publish" type="button" (click)="comment(articulo.id_post)">Publicar</button>
+                        </div>
+                      </div>
+
+                    </div><!-- /modal-right -->
+                  </div><!-- /modal-box -->
+                </div><!-- /post-modal -->
+
+              </div>
+            </ng-container>
+          </ul>
+
+        </section>
+      </mat-drawer-content>
+    </mat-drawer-container>
+  </div>
+</div>

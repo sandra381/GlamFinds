@@ -1,0 +1,203 @@
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<div class="container" style="width:100%;height:100%;">
+  <div class="content" style="width:100%;height:100%;">
+    <mat-drawer-container style="width:100%;height:100%;">
+      <mat-drawer mode="side" opened><app-menu></app-menu></mat-drawer>
+      <mat-drawer-content><app-menu2></app-menu2>
+        <section class="app-content">
+
+
+
+
+        <div class="look-container">
+
+          <div class="look-header">
+            <span class="look-tag">Generador de Looks</span>
+            <h2 class="look-title">Look Generado</h2>
+            <div class="look-title-line"></div>
+          </div>
+
+          <mat-tab-group class="look-tabs">
+
+            <!-- ── Mujer ── -->
+            <mat-tab label="Mujer">
+              <ng-container *ngIf="look; else loadingMujer">
+                <div class="look-items">
+                  <div class="look-item">
+                    <span class="look-item-type">Top</span>
+                    <div class="look-item-img-wrap">
+                      <div class="look-placeholder">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#C4A882" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M20.38 3.46L16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.57a1 1 0 0 0 .99.86H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.86l.58-3.57a2 2 0 0 0-1.34-2.23z"/>
+                        </svg>
+                      </div>
+                      <img [src]="look.top.url_imagen" alt="{{ look.top.nombre }}">
+                    </div>
+                    <h4>{{ look.top.nombre }}</h4>
+                  </div>
+
+                  <div class="look-item">
+                    <span class="look-item-type">Pantalón</span>
+                    <div class="look-item-img-wrap">
+                      <div class="look-placeholder">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#C4A882" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M20.38 3.46L16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.57a1 1 0 0 0 .99.86H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.86l.58-3.57a2 2 0 0 0-1.34-2.23z"/>
+                        </svg>
+                      </div>
+                      <img [src]="look.pantalon.url_imagen" alt="{{ look.pantalon.nombre }}">
+                    </div>
+                    <h4>{{ look.pantalon.nombre }}</h4>
+                  </div>
+
+                  <div class="look-item">
+                    <span class="look-item-type">Chaqueta</span>
+                    <div class="look-item-img-wrap">
+                      <div class="look-placeholder">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#C4A882" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M20.38 3.46L16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.57a1 1 0 0 0 .99.86H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.86l.58-3.57a2 2 0 0 0-1.34-2.23z"/>
+                        </svg>
+                      </div>
+                      <img [src]="look.chaqueta.url_imagen" alt="{{ look.chaqueta.nombre }}">
+                    </div>
+                    <h4>{{ look.chaqueta.nombre }}</h4>
+                  </div>
+
+                  <div class="look-item">
+                    <span class="look-item-type">Accesorio</span>
+                    <div class="look-item-img-wrap">
+                      <div class="look-placeholder">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#C4A882" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M20.38 3.46L16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.57a1 1 0 0 0 .99.86H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.86l.58-3.57a2 2 0 0 0-1.34-2.23z"/>
+                        </svg>
+                      </div>
+                      <img [src]="look.accesorio.url_imagen" alt="{{ look.accesorio.nombre }}">
+                    </div>
+                    <h4>{{ look.accesorio.nombre }}</h4>
+                  </div>
+
+                  <div class="look-item">
+                    <span class="look-item-type">Zapatos</span>
+                    <div class="look-item-img-wrap">
+                      <div class="look-placeholder">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#C4A882" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M20.38 3.46L16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.57a1 1 0 0 0 .99.86H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.86l.58-3.57a2 2 0 0 0-1.34-2.23z"/>
+                        </svg>
+                      </div>
+                      <img [src]="look.zapato.url_imagen" alt="{{ look.zapato.nombre }}">
+                    </div>
+                    <h4>{{ look.zapato.nombre }}</h4>
+                  </div>
+                </div>
+
+                <div class="look-actions">
+                  <button class="look-button" (click)="generarNuevoLook()">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="23 4 23 10 17 10"/>
+                      <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+                    </svg>
+                    Generar Otro Look
+                  </button>
+                </div>
+              </ng-container>
+              <ng-template #loadingMujer>
+                <div class="look-loading">
+                  <div class="look-skeleton" *ngFor="let i of [1,2,3,4,5]"></div>
+                </div>
+              </ng-template>
+            </mat-tab>
+
+            <!-- ── Hombre ── -->
+            <mat-tab label="Hombre">
+              <ng-container *ngIf="lookM; else loadingHombre">
+                <div class="look-items">
+                  <div class="look-item">
+                    <span class="look-item-type">Top</span>
+                    <div class="look-item-img-wrap">
+                      <div class="look-placeholder">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#C4A882" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M20.38 3.46L16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.57a1 1 0 0 0 .99.86H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.86l.58-3.57a2 2 0 0 0-1.34-2.23z"/>
+                        </svg>
+                      </div>
+                      <img [src]="lookM.topM.url_imagen" alt="{{ lookM.topM.nombre }}">
+                    </div>
+                    <h4>{{ lookM.topM.nombre }}</h4>
+                  </div>
+
+                  <div class="look-item">
+                    <span class="look-item-type">Pantalón</span>
+                    <div class="look-item-img-wrap">
+                      <div class="look-placeholder">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#C4A882" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M20.38 3.46L16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.57a1 1 0 0 0 .99.86H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.86l.58-3.57a2 2 0 0 0-1.34-2.23z"/>
+                        </svg>
+                      </div>
+                      <img [src]="lookM.pantalonM.url_imagen" alt="{{ lookM.pantalonM.nombre }}">
+                    </div>
+                    <h4>{{ lookM.pantalonM.nombre }}</h4>
+                  </div>
+
+                  <div class="look-item">
+                    <span class="look-item-type">Chaqueta</span>
+                    <div class="look-item-img-wrap">
+                      <div class="look-placeholder">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#C4A882" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M20.38 3.46L16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.57a1 1 0 0 0 .99.86H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.86l.58-3.57a2 2 0 0 0-1.34-2.23z"/>
+                        </svg>
+                      </div>
+                      <img [src]="lookM.chaquetaM.url_imagen" alt="{{ lookM.chaquetaM.nombre }}">
+                    </div>
+                    <h4>{{ lookM.chaquetaM.nombre }}</h4>
+                  </div>
+
+                  <div class="look-item">
+                    <span class="look-item-type">Accesorio</span>
+                    <div class="look-item-img-wrap">
+                      <div class="look-placeholder">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#C4A882" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M20.38 3.46L16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.57a1 1 0 0 0 .99.86H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.86l.58-3.57a2 2 0 0 0-1.34-2.23z"/>
+                        </svg>
+                      </div>
+                      <img [src]="lookM.accesorioM.url_imagen" alt="{{ lookM.accesorioM.nombre }}">
+                    </div>
+                    <h4>{{ lookM.accesorioM.nombre }}</h4>
+                  </div>
+
+                  <div class="look-item">
+                    <span class="look-item-type">Zapatos</span>
+                    <div class="look-item-img-wrap">
+                      <div class="look-placeholder">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#C4A882" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M20.38 3.46L16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.57a1 1 0 0 0 .99.86H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.86l.58-3.57a2 2 0 0 0-1.34-2.23z"/>
+                        </svg>
+                      </div>
+                      <img [src]="lookM.zapatoM.url_imagen" alt="{{ lookM.zapatoM.nombre }}">
+                    </div>
+                    <h4>{{ lookM.zapatoM.nombre }}</h4>
+                  </div>
+                </div>
+
+                <div class="look-actions">
+                  <button class="look-button" (click)="generarNuevoLookM()">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="23 4 23 10 17 10"/>
+                      <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+                    </svg>
+                    Generar Otro Look
+                  </button>
+                </div>
+              </ng-container>
+              <ng-template #loadingHombre>
+                <div class="look-loading">
+                  <div class="look-skeleton" *ngFor="let i of [1,2,3,4,5]"></div>
+                </div>
+              </ng-template>
+            </mat-tab>
+
+          </mat-tab-group>
+
+        </div>
+</section>
+</mat-drawer-content>
+</mat-drawer-container>
+</div>
+</div>

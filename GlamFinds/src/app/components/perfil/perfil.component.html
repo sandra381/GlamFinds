@@ -1,0 +1,234 @@
+
+<div class="container" style="width: 100%; height: 100%;">
+  <div class="content" style="width: 100%; height: 100%;">
+    <mat-drawer-container style="width: 100%; height: 100%;">
+      <mat-drawer mode="side" opened>
+        <app-menu></app-menu>
+      </mat-drawer>
+      <mat-drawer-content>
+        <app-menu2></app-menu2>
+
+        <!-- ── Tabs ───────────────────────────────────────── -->
+        <div class="custom-tabs">
+
+          <!-- Tab header -->
+          <div class="custom-tabs-header">
+            <span class="custom-tab-label"
+                  [class.active]="activeTab==='guardado' || activeTab==='posts'"
+                  (click)="activeTab='guardado'">GUARDADO</span>
+            <span class="custom-tab-label"
+                  [class.active]="activeTab==='articulos'"
+                  (click)="activeTab='articulos'">ARTÍCULOS GUARDADOS</span>
+            <span class="custom-tab-label"
+                  [class.active]="activeTab==='outfits'"
+                  (click)="activeTab='outfits'">OUTFITS GUARDADOS</span>
+          </div>
+
+          <!-- Tab body wrapper -->
+          <div class="custom-tabs-body">
+
+          <!-- ── Tab: GUARDADO ───────────────────────────────── -->
+          <div class="tab-pane" [class.tab-hidden]="activeTab==='articulos' || activeTab==='outfits'">
+            <div class="tab-content">
+              <div class="post-grid">
+                <div class="post-item" *ngFor="let articulo1 of dataSource4; let i = index">
+
+                  <!-- Modal toggle -->
+                  <input type="checkbox" [id]="'pg'+articulo1.id_post" class="pf-modal-toggle">
+
+                  <!-- Card -->
+                  <div class="post-card">
+                    <label [for]="'pg'+articulo1.id_post" class="post-card-media">
+                      <ng-container *ngIf="isImage(articulo1.imagen); else videoBlock2">
+                        <img class="post-card-img" [src]="'assets/img/' + articulo1.imagen" alt="imagen" loading="lazy">
+                      </ng-container>
+                      <ng-template #videoBlock2>
+                        <video class="post-card-img" autoplay [muted]="true" loop playsinline>
+                          <source [src]="'assets/img/' + articulo1.imagen" type="video/mp4">
+                        </video>
+                      </ng-template>
+                    </label>
+                    <div class="post-card-body">
+                      <div class="post-card-author">
+                        <div class="post-card-avatar-fallback">{{articulo1.usuario?.charAt(0)?.toUpperCase()}}</div>
+                        <span class="post-card-username">{{articulo1.usuario}}</span>
+                      </div>
+                      <p class="post-card-desc">{{articulo1.descripcion}}</p>
+                      <div class="post-card-actions">
+                        <button class="action-icon" (click)="like(articulo1.id_post, i)" [ngClass]="{'active-like': toggle[i]}"><mat-icon>favorite</mat-icon></button>
+                        <span class="action-count">{{likes[articulo1.id_post]?.cantidad || 0}}</span>
+                        <button class="action-icon action-save active-save" (click)="unsaveGuardado(articulo1.id_post)"><mat-icon>bookmark</mat-icon></button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Modal -->
+                  <div class="pf-post-modal">
+                    <label [for]="'pg'+articulo1.id_post" class="pf-modal-backdrop"></label>
+                    <div class="pf-modal-box">
+                      <div class="pf-modal-left">
+                        <ng-container *ngIf="isImage(articulo1.imagen); else modalVidPG">
+                          <img [src]="'assets/img/'+articulo1.imagen" class="pf-modal-img" loading="lazy">
+                        </ng-container>
+                        <ng-template #modalVidPG>
+                          <video class="pf-modal-vid" autoplay [muted]="true" loop playsinline controls>
+                            <source [src]="'assets/img/'+articulo1.imagen" type="video/mp4">
+                          </video>
+                        </ng-template>
+                      </div>
+                      <div class="pf-modal-right">
+                        <div class="pf-modal-header">
+                          <div class="pf-comment-avatar">{{articulo1.usuario?.charAt(0)?.toUpperCase()}}</div>
+                          <span class="pf-modal-username">{{articulo1.usuario}}</span>
+                          <label [for]="'pg'+articulo1.id_post" class="pf-modal-close">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                          </label>
+                        </div>
+                        <div class="pf-modal-scroll">
+                          <p class="pf-modal-desc">{{articulo1.descripcion}}</p>
+                          <div class="pf-modal-stats">
+                            <button class="pf-icon-btn" (click)="like(articulo1.id_post, i)" [ngClass]="toggle[i] ? 'heart-active' : 'heart-inactive'"><mat-icon>favorite</mat-icon></button>
+                            <span class="pf-modal-count">{{likes[articulo1.id_post]?.cantidad || 0}}</span>
+                            <button class="pf-icon-btn"><mat-icon>comment</mat-icon></button>
+                            <span class="pf-modal-count">{{comentarios[articulo1.id_post]?.length || 0}}</span>
+                          </div>
+                          <hr class="pf-divider">
+                          <p class="pf-empty" *ngIf="!comentarios[articulo1.id_post]?.length">Sé el primero en comentar ✨</p>
+                          <div class="pf-comments-list">
+                            <div class="pf-comment" *ngFor="let val of comentarios[articulo1.id_post] || []">
+                              <div class="pf-comment-avatar">{{val.usuario?.[0]?.toUpperCase()}}</div>
+                              <div class="pf-comment-body">
+                                <span class="pf-comment-user">{{val.usuario}}</span>
+                                <span class="pf-comment-text">{{val.comments}}</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="pf-input-row">
+                          <input [(ngModel)]="comentario[articulo1.id_post]" type="text" class="pf-input" placeholder="Añade un comentario..." (keydown.enter)="comment(articulo1.id_post)">
+                          <button class="pf-publish" (click)="comment(articulo1.id_post)">Publicar</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+          </div><!-- /tab-pane guardado -->
+
+          <!-- ── Tab 3: ARTÍCULOS GUARDADOS ─────────────────── -->
+          <div class="tab-pane" [class.tab-hidden]="activeTab!=='articulos'">
+            <div class="tab-content">
+              <div class="article-grid">
+                <ng-container *ngFor="let articulo2 of dataSource5; let i = index">
+
+                  <div class="p-art-card">
+
+                    <!-- Cover image (clickable → opens modal) -->
+                    <label [for]="'dart'+articulo2.id_post" class="p-art-cover" style="cursor:pointer">
+                      <img *ngIf="articulo2.imagen" class="p-art-img"
+                           [src]="articulo2.imagen.startsWith('http') ? articulo2.imagen : 'assets/img/'+articulo2.imagen"
+                           alt="portada" loading="lazy">
+                      <div class="p-art-placeholder" *ngIf="!articulo2.imagen">
+                        <span class="p-art-mono">GF</span>
+                        <span class="p-art-cat">{{articulo2.name_categoria}}</span>
+                      </div>
+                      <span class="p-art-badge">{{articulo2.name_categoria}}</span>
+                    </label>
+
+                    <!-- Body -->
+                    <label [for]="'dart'+articulo2.id_post" class="p-art-body" style="cursor:pointer; display:flex; flex-direction:column;">
+                      <h2 class="p-art-title">{{articulo2.titulo}}</h2>
+                      <div class="p-art-excerpt" [innerHTML]="articulo2.contenido"></div>
+
+                      <div class="p-art-author-row">
+                        <div class="p-art-avatar">{{articulo2.usuario?.charAt(0)?.toUpperCase()}}</div>
+                        <span class="p-art-author">{{articulo2.usuario}}</span>
+                      </div>
+
+                      <div class="p-art-bottom">
+                        <div class="p-art-stats">
+                          <span class="p-art-stat">
+                            <mat-icon class="p-art-stat-icon">favorite</mat-icon>
+                            {{likes[articulo2.id_post]?.cantidad || 0}}
+                          </span>
+                        </div>
+                        <button mat-icon-button class="p-art-unsave-btn" (click)="unsaveArticulo(articulo2.id_post); $event.stopPropagation()">
+                          <mat-icon class="p-art-unsave-icon">bookmark</mat-icon>
+                        </button>
+                      </div>
+                    </label>
+
+                  </div>
+
+                  <!-- Toggle justo antes del modal para que el selector + funcione -->
+                  <input type="checkbox" [id]="'dart'+articulo2.id_post" class="p-art-toggle">
+                  <div class="p-art-modal">
+                    <label [for]="'dart'+articulo2.id_post" class="p-art-backdrop"></label>
+                    <div class="p-art-modal-box">
+                      <label [for]="'dart'+articulo2.id_post" class="p-art-modal-close">✕</label>
+                      <div class="p-art-modal-layout">
+
+                        <!-- Imagen izquierda -->
+                        <div class="p-art-modal-img-panel" *ngIf="articulo2.imagen"
+                             [style.background-image]="'url(' + (articulo2.imagen.startsWith('http') ? articulo2.imagen : 'assets/img/'+articulo2.imagen) + ')'">
+                        </div>
+
+                        <!-- Contenido derecha -->
+                        <div class="p-art-modal-content">
+                          <span class="p-art-modal-cat">{{articulo2.name_categoria}}</span>
+                          <h1 class="p-art-modal-title">{{articulo2.titulo}}</h1>
+                          <div class="p-art-modal-author">
+                            <div class="p-art-avatar">{{articulo2.usuario?.charAt(0)?.toUpperCase()}}</div>
+                            <span class="p-art-author">{{articulo2.usuario}}</span>
+                          </div>
+                          <hr class="p-art-hr">
+                          <div class="p-art-modal-body" [innerHTML]="articulo2.contenido"></div>
+                        </div>
+
+                      </div>
+                    </div>
+                  </div>
+
+                </ng-container>
+              </div>
+            </div>
+          </div><!-- /tab-pane articulos -->
+          <!-- ── Tab: OUTFITS GUARDADOS ───────────────────── -->
+          <div class="tab-pane" [class.tab-hidden]="activeTab!=='outfits'">
+            <div class="tab-content">
+              <div class="outfit-saved-grid">
+                <div class="outfit-saved-card" *ngFor="let item of dataSource6">
+
+                  <div class="outfit-saved-collage">
+                    <img *ngIf="item.outfit?.top?.imagen?.url" [src]="item.outfit.top.imagen.url" alt="top">
+                    <img *ngIf="item.outfit?.bottom?.imagen?.url" [src]="item.outfit.bottom.imagen.url" alt="bottom">
+                    <img *ngIf="item.outfit?.shoes?.imagen?.url" [src]="item.outfit.shoes.imagen.url" alt="shoes">
+                    <img *ngIf="item.outfit?.accessory?.imagen?.url" [src]="item.outfit.accessory.imagen.url" alt="accessory">
+                  </div>
+
+                  <div class="outfit-saved-body">
+                    <div class="outfit-saved-meta">
+                      <span class="outfit-saved-tag" *ngIf="item.outfit?.ocasion">{{ item.outfit.ocasion }}</span>
+                      <span class="outfit-saved-tag" *ngIf="item.outfit?.clima">{{ item.outfit.clima }}</span>
+                    </div>
+                    <p class="outfit-saved-reason">{{ item.outfit?.reason }}</p>
+                    <div class="outfit-saved-footer">
+                      <span class="outfit-saved-date">{{ item.fecha | date:'d MMM y' }}</span>
+                      <button class="action-icon action-save active-save" (click)="unsaveOutfit(item.id_outfit)"><mat-icon>bookmark</mat-icon></button>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+          </div><!-- /tab-pane outfits -->
+
+          </div><!-- /custom-tabs-body -->
+        </div><!-- /custom-tabs -->
+
+      </mat-drawer-content>
+    </mat-drawer-container>
+  </div>
+</div>

@@ -1,0 +1,103 @@
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<div class="container" style="width:100%;height:100%;">
+  <div class="content" style="width:100%;height:100%;">
+    <mat-drawer-container style="width:100%;height:100%;">
+      <mat-drawer mode="side" opened><app-menu></app-menu></mat-drawer>
+      <mat-drawer-content><app-menu2></app-menu2>
+        <section class="app-content">
+
+<div class="av-wrapper">
+
+  <!-- Header -->
+  <div class="av-header">
+    <span class="av-tag">Colección Personal</span>
+    <h2 class="av-title">Armario Virtual</h2>
+    <div class="av-title-line"></div>
+    <p class="av-subtitle">Tu colección personal de moda</p>
+  </div>
+
+  <!-- Top actions -->
+  <div class="av-actions">
+    <button class="av-btn" (click)="verificarPreview()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+        <circle cx="12" cy="12" r="3"/>
+      </svg>
+      {{ isPreview ? 'Salir de Vista Previa' : 'Vista Previa' }}
+    </button>
+    <button class="av-btn av-btn--outline" (click)="subirimagen()" *ngIf="!isPreview">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+        <polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+      </svg>
+      Subir Imagen
+    </button>
+  </div>
+
+  <!-- Carousel -->
+  <div class="carousel-container" *ngIf="!isPreview">
+    <button class="carousel-btn prev" (click)="Left()">&#10094;</button>
+    <div class="carousel" #carousel>
+      <img
+        *ngFor="let image of images"
+        [src]="image.url_imagen"
+        alt="Imagen de prenda"
+        class="carousel-item"
+        draggable="true"
+        (dragstart)="onDragStart($event, image.url_imagen)"
+      />
+      <!-- Empty state inside carousel -->
+      <div class="carousel-empty" *ngIf="images?.length === 0">
+        <div class="carousel-empty-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#C4A882" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2a2 2 0 0 1 2 2"/>
+            <line x1="12" y1="4" x2="12" y2="7.5"/>
+            <polyline points="3,15 12,7.5 21,15"/>
+            <line x1="3" y1="15" x2="21" y2="15"/>
+          </svg>
+        </div>
+        <span class="carousel-empty-text">Sin prendas aún</span>
+      </div>
+    </div>
+    <button class="carousel-btn next" (click)="Right()">&#10095;</button>
+  </div>
+
+  <!-- Hidden file input — preserved exactly -->
+  <input type="file" #fileInput style="display: none" (change)="archivoSeleccionado($event)">
+
+  <!-- Canvas / moodboard -->
+  <div #moodboard class="moodboard-container" (drop)="onDrop($event)" (dragover)="onDragOver($event)" [class.preview-mode]="isPreview">
+
+    <!-- Placeholder when empty -->
+    <div class="av-canvas-empty" *ngIf="moodboardItems?.length === 0">
+      <div class="av-canvas-empty-icon">
+        <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#C4A882" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2a2.5 2.5 0 0 1 2.5 2.5"/>
+          <line x1="12" y1="4.5" x2="12" y2="8.5"/>
+          <polyline points="2,17 12,8.5 22,17"/>
+          <line x1="2" y1="17" x2="22" y2="17"/>
+          <line x1="5" y1="17" x2="5" y2="21"/>
+          <line x1="19" y1="17" x2="19" y2="21"/>
+        </svg>
+      </div>
+      <p class="av-canvas-empty-title">Tu armario está vacío</p>
+      <p class="av-canvas-empty-sub">Sube tus primeras prendas y arrástralas aquí</p>
+    </div>
+
+    <div
+      *ngFor="let item of moodboardItems; let i = index"
+      class="moodboard-item"
+      [ngStyle]="{'top.px': item.top, 'left.px': item.left, 'width.px': item.width, 'height.px': item.height}"
+    >
+      <img *ngIf="item.type === 'image'" [src]="item.src" alt="Moodboard Image" />
+      <button *ngIf="!isPreview" class="delete-btn" (click)="removeItem(i)">&#10005;</button>
+    </div>
+  </div>
+
+</div>
+
+        </section>
+      </mat-drawer-content>
+    </mat-drawer-container>
+  </div>
+</div>

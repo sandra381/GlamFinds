@@ -1,0 +1,141 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; }
+
+/* ── Host ────────────────────────────────────────────────── */
+:host {
+  display: block;
+  height: 100%;
+}
+
+/* ── Sidebar ─────────────────────────────────────────────── */
+.sidebar {
+  width: 220px;
+  height: 100%;
+  background: #FFFFFF;
+  border-right: 1px solid #EDE9E2;
+  display: flex;
+  flex-direction: column;
+  padding: 16px 10px 12px;
+}
+
+/* ── Nav list ────────────────────────────────────────────── */
+.nav-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* ── Section header ──────────────────────────────────────── */
+.nav-section {
+  margin-top: 18px;
+}
+
+.section-title {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 9.5px;
+  font-weight: 700;
+  color: #C0B8B0;
+  letter-spacing: 0.9px;
+  text-transform: uppercase;
+  padding: 0 10px;
+  margin: 0 0 5px;
+}
+
+/* ── Nav link ────────────────────────────────────────────── */
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 10px;
+  border-radius: 10px;
+  text-decoration: none;
+  color: #4A4540;
+  transition: background 0.15s, color 0.15s;
+  cursor: pointer;
+  width: 100%;
+
+  &:hover {
+    background: #FDF5F6;
+    color: #8B3A48;
+    .nav-icon { background: #F9EEF0; color: #C9687A; }
+  }
+
+  &.nav-link--active {
+    background: #F9EEF0;
+    color: #8B3A48;
+    .nav-label { font-weight: 600; }
+    .nav-icon { background: #F0D8DC; color: #C9687A; }
+  }
+}
+
+/* ── Icon ────────────────────────────────────────────────── */
+.nav-icon {
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  border-radius: 8px;
+  background: #F3F0EB;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #7A7269;
+  transition: background 0.15s, color 0.15s;
+  flex-shrink: 0;
+}
+
+/* ── Label ───────────────────────────────────────────────── */
+.nav-label {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 400;
+  white-space: nowrap;
+  flex: 1;
+  line-height: 1;
+}
+
+/* ── Badge ───────────────────────────────────────────────── */
+.nav-badge {
+  background: #C9687A;
+  color: #fff;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  min-width: 19px;
+  height: 19px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 5px;
+  flex-shrink: 0;
+
+  &.nav-badge--ia {
+    background: #C4A882;
+    font-size: 9px;
+    letter-spacing: 0.3px;
+  }
+}
+
+/* ── Bottom profile ──────────────────────────────────────── */
+.sidebar-bottom {
+  margin-top: auto;
+  padding-top: 10px;
+  border-top: 1px solid #EDE9E2;
+}
+
+.avatar-circle {
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #C9687A, #B8924A);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  flex-shrink: 0;
+}

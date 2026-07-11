@@ -1,0 +1,107 @@
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<div class="container" [formGroup]="formGroups">
+  <div class="left">
+
+    <div class="header">
+      <div class="header__top">
+        <div>
+          <h2 class="animation a1">Welcome</h2>
+          <span class="header__sub animation a2">Create your account</span>
+        </div>
+        <button type="button" class="close-btn animation a1" (click)="cerrar()">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+    </div>
+
+    <div class="form">
+
+      <!-- ── Personal ── -->
+      <div class="form-section animation a2">
+        <span class="form-section__label">Personal</span>
+
+        <div class="input-wrap">
+          <mat-icon class="input-icon">person_outline</mat-icon>
+          <input type="text" class="form-field" placeholder="Username" formControlName="usuario">
+        </div>
+        <div class="input-wrap">
+          <mat-icon class="input-icon">badge</mat-icon>
+          <input type="text" class="form-field" placeholder="First Name" formControlName="nombre">
+        </div>
+        <div class="input-wrap">
+          <mat-icon class="input-icon">badge</mat-icon>
+          <input type="text" class="form-field" placeholder="Last Name" formControlName="apellido">
+        </div>
+        <div class="input-wrap">
+          <mat-icon class="input-icon">calendar_today</mat-icon>
+          <input type="date" class="form-field" formControlName="edad">
+        </div>
+
+        <mat-radio-group formControlName="sexo" class="example-full-width" appearance="outline">
+          <mat-radio-button value="F">Femenino</mat-radio-button>
+          <mat-radio-button value="M">Masculino</mat-radio-button>
+          <mat-radio-button value="N/A">Prefiero No decir</mat-radio-button>
+        </mat-radio-group>
+      </div>
+
+      <!-- ── Account ── -->
+      <div class="form-section animation a3">
+        <span class="form-section__label">Account</span>
+
+        <div class="input-wrap">
+          <mat-icon class="input-icon">mail_outline</mat-icon>
+          <input type="email" class="form-field" placeholder="Email" formControlName="correo">
+        </div>
+        <div class="input-wrap">
+          <mat-icon class="input-icon">lock_outline</mat-icon>
+          <input [type]="showPass ? 'text' : 'password'" class="form-field" placeholder="Password" formControlName="contrase">
+          <button type="button" class="pass-toggle" (click)="showPass = !showPass" tabindex="-1">
+            <mat-icon>{{ showPass ? 'visibility_off' : 'visibility' }}</mat-icon>
+          </button>
+        </div>
+
+        <!-- Password strength -->
+        <div class="pwd-strength" *ngIf="formGroups.get('contrase')?.value">
+          <div class="pwd-strength__track">
+            <div class="pwd-strength__fill" [attr.data-score]="passwordStrength"></div>
+          </div>
+          <span class="pwd-strength__label">{{ passwordStrengthLabel }}</span>
+        </div>
+      </div>
+
+      <!-- ── Profile ── -->
+      <div class="form-section animation a4">
+        <span class="form-section__label">Profile</span>
+
+        <label class="file-upload" [class.file-upload--has-file]="imageName">
+          <input type="file" hidden formControlName="imagen" accept="image/*" (change)="imagenSelect($event)">
+          <mat-icon>{{ imageName ? 'check_circle' : 'add_photo_alternate' }}</mat-icon>
+          <div class="file-upload__text">
+            <span class="file-upload__main">{{ imageName || 'Upload profile photo' }}</span>
+            <span class="file-upload__hint" *ngIf="!imageName">JPG, PNG — max 5 MB</span>
+          </div>
+        </label>
+
+        <textarea placeholder="Descripcion" class="form-field1" formControlName="descripcion" rows="4"></textarea>
+      </div>
+
+      <button class="animation a5" (click)="guardarUsuario()">Register</button>
+
+    </div>
+  </div>
+
+  <div class="right"><a href="#" class="modal__close">&times;</a></div>
+</div>
+
+<!-- Toast -->
+<div class="gl-toast"
+     *ngIf="toast.visible"
+     [class.gl-toast--success]="toast.type === 'success'"
+     [class.gl-toast--error]="toast.type === 'error'"
+     [class.gl-toast--out]="toast.hiding">
+  <div class="gl-toast__bar"></div>
+  <div class="gl-toast__body">
+    <span class="gl-toast__label">{{ toast.type === 'success' ? 'Registro exitoso' : 'Error' }}</span>
+    <span class="gl-toast__msg">{{ toast.message }}</span>
+  </div>
+</div>

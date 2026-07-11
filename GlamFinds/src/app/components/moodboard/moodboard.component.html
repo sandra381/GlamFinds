@@ -1,0 +1,290 @@
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<div class="container" style="width:100%;height:100%;">
+  <div class="content" style="width:100%;height:100%;">
+    <mat-drawer-container style="width:100%;height:100%;">
+      <mat-drawer mode="side" opened><app-menu></app-menu></mat-drawer>
+      <mat-drawer-content><app-menu2></app-menu2>
+        <section class="app-content">
+
+<div class="mb-wrapper" (click)="deselectAll()">
+
+  <!-- ── Top bar ─────────────────────────────────────────── -->
+  <div class="mb-topbar">
+
+    <div class="mb-brand">
+      <span class="mb-brand-tag">Inspiration Board</span>
+      <h2 class="mb-title">Crea tu Moodboard</h2>
+      <div class="mb-board-name-row" (click)="$event.stopPropagation()">
+        <input
+          class="mb-board-name-input"
+          [(ngModel)]="boardTitle"
+          placeholder="Nombre de tu moodboard"
+        />
+      </div>
+    </div>
+
+    <div class="mb-topbar-actions">
+      <button class="mb-preview-btn"
+              (click)="isPreviewMode = !isPreviewMode"
+              [class.mb-preview-btn--active]="isPreviewMode">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+          <circle cx="12" cy="12" r="3"/>
+        </svg>
+        {{ isPreviewMode ? 'Salir de Vista Previa' : 'Vista Previa' }}
+      </button>
+      <button class="mb-download-btn" (click)="downloadMoodboard()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="7 10 12 15 17 10"/>
+          <line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+        Descargar
+      </button>
+    </div>
+  </div>
+
+  <!-- ── Body: sidebar + canvas ──────────────────────────── -->
+  <div class="mb-body">
+
+    <!-- Sidebar izquierdo -->
+    <aside class="mb-sidebar" *ngIf="!isPreviewMode" (click)="$event.stopPropagation()">
+
+      <!-- Input oculto para selección de archivos -->
+      <input #fileInput type="file" accept="image/*" multiple
+             style="display:none" (change)="onFileSelected($event)">
+
+      <!-- Añadir imagen -->
+      <p class="mb-sidebar-label">Añadir imagen</p>
+      <div class="dropzone" (dragover)="onDragOver($event)" (drop)="onDrop($event)"
+           (click)="openFilePicker()">
+        <div class="dropzone-inner">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#C4A882"
+               stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="18" height="18" rx="2"/>
+            <circle cx="8.5" cy="8.5" r="1.5"/>
+            <polyline points="21 15 16 10 5 21"/>
+          </svg>
+          <p class="dropzone-text">Arrastra aquí</p>
+          <p class="dropzone-sub">o haz clic para seleccionar</p>
+        </div>
+      </div>
+      <button class="mb-file-btn" (click)="openFilePicker()">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="17 8 12 3 7 8"/>
+          <line x1="12" y1="3" x2="12" y2="15"/>
+        </svg>
+        Seleccionar archivo
+      </button>
+
+      <!-- Tipografía -->
+      <p class="mb-sidebar-label">Tipografía</p>
+      <div class="mb-font-dropdown" (click)="$event.stopPropagation()">
+        <!-- Trigger -->
+        <button class="mb-font-trigger"
+                [class.mb-font-trigger--open]="fontDropdownOpen"
+                (click)="fontDropdownOpen = !fontDropdownOpen">
+          <span class="mb-font-trigger-preview"
+                [style.font-family]="selectedFont + ', ' + selectedFontFallback"
+                [style.font-style]="selectedFontItalic ? 'italic' : 'normal'">
+            {{ selectedFont }}
+          </span>
+          <svg class="mb-font-chevron" width="10" height="10" viewBox="0 0 24 24"
+               fill="none" stroke="currentColor" stroke-width="2.5"
+               stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 12 15 18 9"/>
+          </svg>
+        </button>
+        <!-- Panel desplegable -->
+        <div class="mb-font-panel" *ngIf="fontDropdownOpen">
+          <button
+            *ngFor="let font of fontOptions"
+            class="mb-font-option"
+            [class.mb-font-option--active]="selectedFont === font.family"
+            (click)="selectFont(font.family)">
+            <span class="mb-font-option-sample"
+                  [style.font-family]="font.family + ', ' + font.fallback"
+                  [style.font-style]="font.italic ? 'italic' : 'normal'">Aa</span>
+            <span class="mb-font-option-name">{{ font.label }}</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Color de texto -->
+      <p class="mb-sidebar-label">Color de texto</p>
+      <div class="mb-text-color-swatches">
+        <button
+          *ngFor="let opt of textColorOptions"
+          class="mb-text-color-swatch"
+          [style.background]="opt.color"
+          [class.mb-text-color-swatch--active]="selectedTextColor === opt.color"
+          [title]="opt.label"
+          (click)="selectedTextColor = opt.color">
+        </button>
+      </div>
+
+      <!-- Añadir texto -->
+      <p class="mb-sidebar-label">Texto</p>
+      <button class="mb-text-btn" (click)="addText()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="4 7 4 4 20 4 20 7"/>
+          <line x1="9" y1="20" x2="15" y2="20"/>
+          <line x1="12" y1="4" x2="12" y2="20"/>
+        </svg>
+        Añadir bloque de texto
+      </button>
+
+      <!-- Fondo del canvas -->
+      <p class="mb-sidebar-label">Fondo</p>
+      <div class="mb-bg-swatches">
+        <button
+          *ngFor="let opt of bgOptions"
+          class="mb-bg-swatch"
+          [style.background]="opt.color"
+          [class.mb-bg-swatch--active]="canvasBg === opt.color"
+          [title]="opt.label"
+          (click)="setCanvasBg(opt.color)">
+        </button>
+      </div>
+
+      <!-- Tips -->
+      <div class="mb-divider-label"><span>Tips</span></div>
+      <ul class="mb-tips-list">
+        <li>Arrastra imágenes al canvas</li>
+        <li>Selecciona para rotar</li>
+        <li>Escribe tu texto editorial</li>
+        <li>Descarga tu collage final</li>
+      </ul>
+
+    </aside>
+
+    <!-- Canvas principal -->
+    <div #moodboard class="moodboard-container"
+         [style.background-color]="canvasBg">
+
+      <!-- Título del canvas (visible en la descarga) -->
+      <div class="mb-canvas-title-overlay">
+        <span class="mb-canvas-title-text">{{ boardTitle }}</span>
+      </div>
+
+      <!-- Estado vacío -->
+      <div class="mb-empty" *ngIf="moodboardItems.length === 0">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#D4C9BC"
+             stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+          <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+        </svg>
+        <p class="mb-empty-text">Tu moodboard aparecerá aquí</p>
+        <p class="mb-empty-sub">Arrastra imágenes desde el panel izquierdo</p>
+      </div>
+
+      <!-- Ítems del moodboard -->
+      <ng-container *ngFor="let item of moodboardItems; let i = index">
+
+        <!-- Imagen -->
+        <div *ngIf="item.type === 'image'"
+             class="moodboard-item image-item"
+             [ngStyle]="{'top.px': item.top, 'left.px': item.left, 'width.px': item.width, 'height.px': item.height}"
+             [class.is-selected]="selectedIndex === i"
+             (click)="selectItem(i, $event)">
+
+          <div class="item-inner" [style.transform]="'rotate(' + (item.rotation || 0) + 'deg)'">
+            <img [src]="item.src" alt="Moodboard Image" />
+          </div>
+
+          <!-- Handles de redimensionado (esquinas) -->
+          <ng-container *ngIf="selectedIndex === i && !isPreviewMode">
+            <div class="resize-handle resize-nw"></div>
+            <div class="resize-handle resize-ne"></div>
+            <div class="resize-handle resize-sw"></div>
+            <div class="resize-handle resize-se"></div>
+          </ng-container>
+
+          <!-- Botones de rotación -->
+          <div class="rotate-controls" *ngIf="selectedIndex === i && !isPreviewMode"
+               (mousedown)="$event.stopPropagation()">
+            <button class="rotate-btn" (click)="rotateItem(i, 'left', $event)" title="Rotar izquierda">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="1 4 1 10 7 10"/>
+                <path d="M3.51 15a9 9 0 1 0 .49-4.95"/>
+              </svg>
+            </button>
+            <button class="rotate-btn" (click)="rotateItem(i, 'right', $event)" title="Rotar derecha">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="23 4 23 10 17 10"/>
+                <path d="M20.49 15a9 9 0 1 1-.49-4.95"/>
+              </svg>
+            </button>
+          </div>
+
+          <button class="delete-btn" *ngIf="!isPreviewMode"
+                  (click)="removeItem(i, $event)">&#10005;</button>
+        </div>
+
+        <!-- Texto -->
+        <div *ngIf="item.type === 'text'"
+             class="moodboard-item text-item"
+             [ngStyle]="{'top.px': item.top, 'left.px': item.left, 'width.px': item.width, 'height.px': item.height}"
+             [class.is-selected]="selectedIndex === i"
+             (click)="selectItem(i, $event)">
+
+          <div class="item-inner" [style.transform]="'rotate(' + (item.rotation || 0) + 'deg)'">
+            <div class="text-content"
+                 [style.font-size.px]="item.fontSize || 32"
+                 [style.font-family]="item.fontFamily ? (item.fontFamily + ', ' + item.fontFallback) : 'Playfair Display, Georgia, serif'"
+                 [style.color]="item.color || '#1a1a1a'"
+                 [attr.contenteditable]="!isPreviewMode ? 'true' : undefined"
+                 (blur)="updateText(i, $event)"
+                 (keydown.escape)="blurTarget($event)">{{ item.content }}</div>
+          </div>
+
+          <!-- Handles de redimensionado (esquinas) -->
+          <ng-container *ngIf="selectedIndex === i && !isPreviewMode">
+            <div class="resize-handle resize-nw"></div>
+            <div class="resize-handle resize-ne"></div>
+            <div class="resize-handle resize-sw"></div>
+            <div class="resize-handle resize-se"></div>
+          </ng-container>
+
+          <!-- Botones de rotación -->
+          <div class="rotate-controls" *ngIf="selectedIndex === i && !isPreviewMode"
+               (mousedown)="$event.stopPropagation()">
+            <button class="rotate-btn" (click)="rotateItem(i, 'left', $event)" title="Rotar izquierda">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="1 4 1 10 7 10"/>
+                <path d="M3.51 15a9 9 0 1 0 .49-4.95"/>
+              </svg>
+            </button>
+            <button class="rotate-btn" (click)="rotateItem(i, 'right', $event)" title="Rotar derecha">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="23 4 23 10 17 10"/>
+                <path d="M20.49 15a9 9 0 1 1-.49-4.95"/>
+              </svg>
+            </button>
+          </div>
+
+          <button class="delete-btn" *ngIf="!isPreviewMode"
+                  (click)="removeItem(i, $event)">&#10005;</button>
+        </div>
+
+      </ng-container>
+    </div><!-- /moodboard-container -->
+
+  </div><!-- /mb-body -->
+
+</div><!-- /mb-wrapper -->
+
+        </section>
+      </mat-drawer-content>
+    </mat-drawer-container>
+  </div>
+</div>

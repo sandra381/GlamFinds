@@ -1,0 +1,298 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; }
+
+/* ── Dialog wrapper ────────────────────────────────────── */
+.new-art-dialog {
+  display: flex;
+  width: min(88vw, 860px);
+  max-height: 90vh;
+  border-radius: 20px;
+  overflow: hidden;
+  background: #FFFFFF;
+  font-family: 'DM Sans', sans-serif;
+}
+
+/* ── Left panel ────────────────────────────────────────── */
+.nal-left {
+  width: 240px;
+  flex-shrink: 0;
+  background: #0A0A0A;
+  padding: 36px 28px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+  overflow: hidden;
+}
+
+.nal-brand-tag {
+  font-family: 'Playfair Display', serif;
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: 2px;
+  color: #C4A882;
+  text-transform: uppercase;
+}
+
+.nal-accent-line {
+  width: 32px;
+  height: 2px;
+  background: #C4A882;
+  margin: 18px 0 20px;
+  border-radius: 2px;
+}
+
+.nal-left-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 30px;
+  font-weight: 700;
+  color: #FFFFFF;
+  line-height: 1.15;
+  margin: 0 0 16px;
+  letter-spacing: -0.5px;
+}
+
+.nal-left-desc {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  color: rgba(255,255,255,0.50);
+  line-height: 1.65;
+  margin: 0;
+}
+
+/* Decorative circles */
+.nal-left-deco {
+  position: absolute;
+  bottom: -30px;
+  right: -30px;
+  display: flex;
+  gap: 0;
+}
+
+.nal-deco-circle {
+  display: block;
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(196,168,130,0.20);
+  position: absolute;
+  bottom: 0;
+  right: 0;
+
+  &--sm {
+    width: 90px;
+    height: 90px;
+    border-color: rgba(196,168,130,0.35);
+    bottom: 20px;
+    right: 20px;
+  }
+
+  &--xs {
+    width: 46px;
+    height: 46px;
+    border-color: rgba(196,168,130,0.55);
+    background: rgba(196,168,130,0.10);
+    bottom: 44px;
+    right: 44px;
+  }
+}
+
+/* ── Right panel ───────────────────────────────────────── */
+.nal-right {
+  flex: 1;
+  padding: 32px 36px 36px;
+  overflow-y: auto;
+  scrollbar-width: none;
+  &::-webkit-scrollbar { display: none; }
+}
+
+.nal-form-header {
+  margin-bottom: 24px;
+}
+
+.nal-form-tag {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #8A8A8A;
+}
+
+/* ── Fields ────────────────────────────────────────────── */
+.naf-field {
+  margin-bottom: 22px;
+}
+
+.naf-label {
+  display: block;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: #8A8A8A;
+  margin-bottom: 8px;
+}
+
+/* Textarea (title) */
+.naf-textarea {
+  width: 100%;
+  padding: 12px 14px;
+  background: #FAFAF8;
+  border: 1px solid #E8E2DB;
+  border-radius: 10px;
+  color: #0A0A0A;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.5;
+  outline: none;
+  resize: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+
+  &::placeholder { color: #C0B8B0; }
+
+  &:focus {
+    border-color: #C4A882;
+    box-shadow: 0 0 0 3px rgba(196,168,130,0.12);
+    background: #FFFFFF;
+  }
+}
+
+/* TinyMCE wrapper */
+.naf-editor-wrap {
+  border: 1px solid #E8E2DB;
+  border-radius: 10px;
+  overflow: hidden;
+  transition: border-color 0.2s ease;
+
+  &:focus-within {
+    border-color: #C4A882;
+    box-shadow: 0 0 0 3px rgba(196,168,130,0.12);
+  }
+}
+
+/* File upload */
+.naf-file-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 11px 14px;
+  background: #FAFAF8;
+  border: 1px solid #E8E2DB;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease;
+  position: relative;
+  overflow: hidden;
+
+  &:hover {
+    border-color: #C4A882;
+    background: #F3EDE6;
+  }
+}
+
+.naf-file-input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.naf-file-text {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  color: #8A8A8A;
+}
+
+.naf-file-icon {
+  font-size: 16px;
+  color: #C4A882;
+}
+
+/* Image preview */
+.naf-preview {
+  margin-top: 10px;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid #E8E2DB;
+}
+
+.naf-preview-img {
+  width: 100%;
+  max-height: 160px;
+  object-fit: cover;
+  display: block;
+}
+
+/* Select */
+.naf-select-wrap {
+  position: relative;
+}
+
+.naf-select {
+  width: 100%;
+  padding: 11px 38px 11px 14px;
+  background: #FAFAF8;
+  border: 1px solid #E8E2DB;
+  border-radius: 10px;
+  color: #0A0A0A;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  appearance: none;
+  -webkit-appearance: none;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+
+  &:focus {
+    border-color: #C4A882;
+    box-shadow: 0 0 0 3px rgba(196,168,130,0.12);
+    background: #FFFFFF;
+  }
+}
+
+.naf-select-arrow {
+  position: absolute;
+  right: 13px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 14px;
+  color: #8A8A8A;
+  pointer-events: none;
+}
+
+/* Submit button */
+.naf-actions {
+  padding-top: 4px;
+}
+
+.naf-submit {
+  width: 100%;
+  padding: 13px;
+  background: #0A0A0A;
+  color: #FFFFFF;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.25s ease, transform 0.15s ease;
+
+  &:hover  { background: #C4A882; transform: translateY(-1px); }
+  &:active { transform: translateY(0); }
+}
+
+/* Responsive: stack panels on small screens */
+@media (max-width: 600px) {
+  .new-art-dialog { flex-direction: column; width: 100%; max-height: 100vh; }
+  .nal-left { width: 100%; padding: 24px 24px 32px; }
+  .nal-left-title { font-size: 24px; }
+  .nal-right { padding: 24px; }
+}

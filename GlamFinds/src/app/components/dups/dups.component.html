@@ -1,0 +1,68 @@
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<div class="container" style="width:100%; height:100%;">
+  <div class="content" style="width:100%; height:100%;">
+    <mat-drawer-container style="width:100%; height:100%;">
+      <mat-drawer mode="side" opened><app-menu></app-menu></mat-drawer>
+      <mat-drawer-content><app-menu2></app-menu2>
+        <section class="app-content">
+          <ul class="projects">
+            <ng-container *ngFor="let articulo of dataSource; let i = index">
+              <div class="containers">
+                <div class="window">
+                  <br>
+                  <img class="user" src="assets/img/{{perfil[articulo.id_user]?.imagen}}">
+
+                  <a class="username">{{articulo.usuario}}</a><br>
+                  <img class="foto" src="assets/img/{{articulo.imagen}}">
+                  <div class="hover-zone">
+                    <div class="top-bar">
+                      <p class="des">{{articulo.descripcion}}</p>
+                    </div>
+                    <div class="bottom-bar">
+                      <a  href="{{articulo.link}}" target="_blank" rel="noopener noreferrer">🔗</a>
+                    </div>
+                  </div>
+                  <div class="post-content">
+                    <div class="reaction-wrapper">
+                      <button mat-icon-button (click)="like(articulo.id_post, i)" id="button" [ngClass]="{'negro' : !toggle[i], 'red': toggle[i]}">
+                        <mat-icon>favorite</mat-icon>
+                      </button>
+                      <button mat-icon-button> <mat-icon>comment</mat-icon></button>
+                      <button mat-icon-button [matMenuTriggerFor]="menu"><mat-icon>send</mat-icon>
+                      </button>
+                      <mat-menu #menu="matMenu">
+                        <button mat-menu-item>
+                          <li><a href="https://www.facebook.com/sharer/sharer.php?u=http://localhost:4200" target="_blank" class="facebook"><i class="fa fa-facebook"><span>&nbsp;&nbsp;Facebook</span></i></a></li>
+                        </button>
+                        <button mat-menu-item disabled>
+                          <li><a href="https://twitter.com/intent/tweet?url=http://localhost:4200" target="_blank" class="twitter"><i class="fa fa-twitter"><span>&nbsp;&nbsp;Twitter</span></i></a></li>
+                        </button>
+                        <button mat-menu-item>
+                          <li><a  href="https://www.instagram.com/share?url=http://localhost:4200" target="_blank"><i class="fa fa-instagram"><span>&nbsp;&nbsp;Instagram</span></i></a></li>
+                        </button>
+                      </mat-menu>
+                      <button mat-icon-button (click)="save(articulo.id_post,i)" [ngClass]="{'negro' : !toggle1[i], 'yellow': toggle1[i]}">
+                        <mat-icon>bookmark</mat-icon>
+                      </button>
+                    </div>
+                    <p class="likes">{{likes[articulo.id_post]?.cantidad || 0}} likes</p>
+                    <div class="comment" *ngFor="let val of comentarios[articulo.id_post] || []">
+                      <p class="description">
+                        <span>{{ val.usuario }}</span>: {{ val.comments }}
+                        <button (click)="openMod(articulo.id_post,val.id_comment)">Editar</button>
+                        <button (click)="deleteComment(articulo.id_post,val.id_comment)">Eliminar</button>
+                    </div>
+                    <div class="comment-wrapper">
+                      <input [(ngModel)]="comentario[articulo.id_post]" type="text" class="comment-box" placeholder="Escribe un comentario">
+                      <button class="comment-btn" (click)="comment(articulo.id_post)"></button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </ng-container>
+          </ul>
+        </section>
+      </mat-drawer-content>
+    </mat-drawer-container>
+  </div>
+</div>

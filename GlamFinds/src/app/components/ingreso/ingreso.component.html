@@ -1,0 +1,49 @@
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<div class="container">
+
+  <!-- Imagen de fondo animada (Ken Burns) -->
+  <div class="bg-image"></div>
+
+  <!-- Card centrada -->
+  <div class="login-card animation a1">
+
+    <div class="card-brand">
+      <h2 class="card-brand__name">GLAMFINDS</h2>
+      <span class="card-brand__tag">Fashion &amp; Lifestyle</span>
+    </div>
+
+    <div class="form">
+      <input type="text"     [(ngModel)]="user.usuario"  class="form-field animation a3" placeholder="Usuario">
+      <div class="pass-wrap animation a4">
+        <input [type]="showPass ? 'text' : 'password'" [(ngModel)]="user.contrase" class="form-field" placeholder="Contraseña">
+        <button type="button" class="pass-toggle" (click)="showPass = !showPass" tabindex="-1">
+          <mat-icon>{{ showPass ? 'visibility_off' : 'visibility' }}</mat-icon>
+        </button>
+      </div>
+      <button class="login-btn animation a5" (click)="ingresarbase()">Iniciar sesión</button>
+      <p class="register-link animation a6">
+        ¿No tienes cuenta?
+        <a (click)="openRegistrar()">Regístrate</a>
+      </p>
+    </div>
+
+  </div>
+
+  <!-- Tagline en esquina -->
+  <span class="corner-tagline">Your style, discovered.</span>
+
+</div>
+
+<!-- Toast -->
+<div class="gl-toast"
+     *ngIf="toast.visible"
+     [class.gl-toast--success]="toast.type === 'success'"
+     [class.gl-toast--error]="toast.type === 'error'"
+     [class.gl-toast--out]="toast.hiding">
+  <div class="gl-toast__bar"></div>
+  <div class="gl-toast__body">
+    <span class="gl-toast__label">{{ toast.type === 'success' ? 'Acceso confirmado' : 'Acceso denegado' }}</span>
+    <span class="gl-toast__msg">{{ toast.message }}</span>
+  </div>
+</div>
+

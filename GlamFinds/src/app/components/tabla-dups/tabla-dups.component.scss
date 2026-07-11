@@ -1,0 +1,57 @@
+@import url('https://fonts.googleapis.com/css2?family=Abril+Fatface&family=DM+Sans:opsz@9..40&family=Fragment+Mono&family=Kanit:ital@1&family=Libre+Baskerville&family=Lilita+One&family=Oswald:wght@500&family=Roboto+Condensed&family=Signika:wght@500&display=swap');
+.table{
+    width: 100%;
+}
+
+.table th, .table td {
+  border: 1px solid #ddd;
+  padding: 12px;
+  text-align: left;
+}
+.table th {
+  font-family: 'Roboto', sans-serif; /* Cambia 'Roboto' por la fuente que desees */
+  color: #000;
+  background-color: #f2f2f2;
+  padding: 12px;
+  text-align: left;
+}
+.mat-form-field {
+    font-size: 14px;
+    width: 95%;
+
+  }
+  *{
+	margin : 0;
+	padding : 0;
+}
+.fondo {
+  background: radial-gradient(ellipse at center, rgba(62, 62, 62, 1) 0%, rgba(0, 0, 0, 0.4) 100%);
+  font-size: 12px;
+  height: fit-content;
+  width: 100%;
+  height: 100%;
+}
+
+.arreglar{
+    width: 90%;
+    margin: auto;
+    background-color: white;
+}
+.ng-container{
+    overflow: initial;
+}
+img{
+    width: 100px;
+    gap: 10px;
+    margin-right: 20px;
+}
+.imgs{
+  width: 60px;
+  gap: 10px;
+}
+h1{
+  font-family: 'DM Sans', sans-serif;
+    font-size: 30px;
+    text-align: center;
+    margin-bottom: 20px;
+}

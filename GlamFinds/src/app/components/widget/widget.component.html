@@ -1,0 +1,41 @@
+<div *ngIf="showWidget" class="fashion-widget">
+  <details class="widget-details">
+
+    <!-- Collapsed state: compact pill button -->
+    <summary class="widget-summary">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+        <path d="M2 17l10 5 10-5"/>
+        <path d="M2 12l10 5 10-5"/>
+      </svg>
+      Fashion Trends
+      <span class="widget-chevron">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="18 15 12 9 6 15"/>
+        </svg>
+      </span>
+    </summary>
+
+    <!-- Expanded state -->
+    <div class="widget-body">
+      <div class="widget-header">
+        <h2>Latest Fashion Trends</h2>
+        <button class="close-btn" (click)="closeWidget()">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+      <div class="news-container">
+        <div class="widget-loading" *ngIf="trends.length === 0">Cargando tendencias...</div>
+        <div *ngFor="let trend of trends" class="trend-item">
+          <img [src]="trend.image" alt="Trend image" />
+          <h3>{{ trend.title }}</h3>
+          <p>{{ trend.description }}</p>
+          <a [href]="trend.link" target="_blank">Leer más →</a>
+        </div>
+      </div>
+    </div>
+
+  </details>
+</div>

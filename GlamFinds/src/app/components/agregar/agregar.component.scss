@@ -1,0 +1,372 @@
+/* =================================================================
+   GlamFinds — Agregar Publicación
+   Elegant fashion magazine upload form
+   ================================================================= */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap');
+
+/* ── Reset ────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: #F7F3EE;
+}
+
+/* ── Page wrapper ─────────────────────────────────────────────── */
+.container {
+  width: 100%;
+  min-height: calc(100vh - 64px);
+  background: #F7F3EE;
+}
+
+/* ── Main card ────────────────────────────────────────────────── */
+.screen {
+  width: 100%;
+  min-height: calc(100vh - 64px);
+  background: #FFFFFF;
+  position: relative;
+  box-shadow: none;
+  border-radius: 0;
+}
+.screen::after { display: none; }
+
+/* ── 4-item → 2×2 grid ────────────────────────────────────────── */
+.screen-body {
+  display: grid;
+  grid-template-columns: minmax(240px, 380px) 1fr minmax(240px, 380px) 1fr;
+  width: 100%;
+  min-height: calc(100vh - 64px);
+}
+
+/* ── Each panel ───────────────────────────────────────────────── */
+.screen-body-item {
+  padding: 52px 44px;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid #E8E2DB;
+  min-height: calc(100vh - 64px);
+}
+.screen-body-item:last-child { border-right: none; }
+
+/* Vertical divider between the two POST sections */
+.screen-body-item:nth-child(2) {
+  border-right: 2px solid #E8E2DB;
+}
+
+/* Preview columns: cream background */
+.screen-body-item.left {
+  background: #FAFAF8;
+  gap: 0;
+}
+
+/* ── Section title area (.app-title) ──────────────────────────── */
+.app-title {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 28px;
+  position: relative;
+  /* remove old ::after pink line */
+}
+.app-title::after { display: none !important; }
+
+/* Gold accent bar */
+.app-title::before {
+  content: '';
+  display: block;
+  width: 28px;
+  height: 3px;
+  background: #C4A882;
+  border-radius: 2px;
+  margin-bottom: 10px;
+}
+
+/* Section heading */
+.section-tag {
+  font-family: 'Playfair Display', serif;
+  font-size: 24px;
+  font-weight: 600;
+  color: #0A0A0A;
+  letter-spacing: -0.5px;
+  line-height: 1.1;
+  display: block;
+}
+
+/* Subtitle "Vista previa de imagen" */
+.section-sub {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: #8A8A8A;
+  margin: 6px 0 0;
+  padding: 0;
+}
+
+/* Null out any remaining old titulo_post styles */
+.titulo_post {
+  display: none !important;
+}
+
+/* ── Preview image box ────────────────────────────────────────── */
+.preview-box {
+  margin-top: 20px;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.09);
+  display: inline-block;
+  max-width: 100%;
+}
+.preview-box img {
+  width: 100%;
+  max-width: 300px;
+  height: auto;
+  display: block;
+  object-fit: cover;
+  border-radius: 14px;
+}
+
+/* Empty state placeholder */
+.preview-placeholder {
+  margin-top: 20px;
+  width: 100%;
+  max-width: 280px;
+  min-height: 180px;
+  background: #F2EDE8;
+  border: 1.5px dashed #D4C9BC;
+  border-radius: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+.preview-placeholder p {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  color: #B8B0A8;
+  letter-spacing: 0.5px;
+  margin: 0;
+  padding: 0;
+  text-align: center;
+}
+
+/* ── Form section header ──────────────────────────────────────── */
+.form-section-header {
+  margin-bottom: 28px;
+}
+.form-section-tag {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #8A8A8A;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.form-section-tag::before {
+  content: '';
+  display: inline-block;
+  width: 20px;
+  height: 1.5px;
+  background: #C4A882;
+  border-radius: 1px;
+}
+
+/* ── Form layout ─────────────────────────────────────────────── */
+.row   { width: 100%; }
+.app-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  width: 100%;
+}
+
+/* Field labels */
+.field-label {
+  display: block;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: #8A8A8A;
+  margin: 20px 0 7px;
+  user-select: none;
+}
+.field-label:first-of-type { margin-top: 0; }
+
+/* ── Inputs / Textarea / Select ──────────────────────────────── */
+.app-form-control {
+  width: 100%;
+  padding: 13px 16px;
+  background: #FAFAF8;
+  border: 1px solid #E4DDD5;
+  border-radius: 10px;
+  color: #1A1A1A;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  text-transform: none;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+  display: block;
+}
+.app-form-control::placeholder { color: #C0B8B0; }
+.app-form-control:focus {
+  border-color: #C4A882;
+  background: #FFFFFF;
+  box-shadow: 0 0 0 3px rgba(196, 168, 130, 0.13);
+}
+
+textarea.app-form-control {
+  resize: vertical;
+  min-height: 100px;
+  line-height: 1.65;
+}
+
+/* ── Styled select ───────────────────────────────────────────── */
+.select-wrapper {
+  position: relative;
+  width: 100%;
+}
+.select-wrapper::after {
+  content: '';
+  pointer-events: none;
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 6px solid #8A8A8A;
+}
+select.app-form-control {
+  -webkit-appearance: none;
+  appearance: none;
+  cursor: pointer;
+  padding-right: 40px;
+  background: #FAFAF8;
+}
+select.app-form-control:focus {
+  border-color: #C4A882;
+  background: #FFFFFF;
+  box-shadow: 0 0 0 3px rgba(196, 168, 130, 0.13);
+}
+
+/* ── Styled file input ───────────────────────────────────────── */
+.file-upload-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 13px 16px;
+  background: #FAFAF8;
+  border: 1px solid #E4DDD5;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease;
+  position: relative;
+  overflow: hidden;
+  gap: 12px;
+}
+.file-upload-label:hover {
+  border-color: #C4A882;
+  background: #F3EDE6;
+}
+
+/* Hide the native file input but keep it functional */
+.file-upload-label .file-input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  box-shadow: none;
+}
+
+.file-upload-text {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  color: #8A8A8A;
+  flex: 1;
+  pointer-events: none;
+}
+.file-upload-icon {
+  color: #C4A882;
+  display: flex;
+  align-items: center;
+  pointer-events: none;
+  flex-shrink: 0;
+}
+
+/* ── Buttons row ─────────────────────────────────────────────── */
+.app-form-group        { margin-bottom: 0; }
+.app-form-group.buttons {
+  position: static !important;
+  width: auto !important;
+  height: auto !important;
+  background: transparent !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  display: block !important;
+  margin-top: 28px;
+  text-align: right;
+  z-index: auto !important;
+}
+
+/* SEND button — black → gold on hover */
+.app-form-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px 40px;
+  background: #0A0A0A;
+  color: #FFFFFF;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  outline: none;
+  transition: background 0.25s ease, transform 0.15s ease;
+}
+.app-form-button:hover  { background: #C4A882; transform: translateY(-1px); }
+.app-form-button:active { transform: translateY(0); }
+
+/* ── Responsive ──────────────────────────────────────────────── */
+@media (max-width: 1200px) {
+  .screen-body {
+    grid-template-columns: 260px 1fr 260px 1fr;
+  }
+}
+
+@media (max-width: 900px) {
+  .screen-body {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto;
+  }
+  .screen-body-item { min-height: auto; padding: 36px 28px; }
+  .screen-body-item:nth-child(2) { border-right: 1px solid #E8E2DB; border-bottom: 2px solid #E8E2DB; }
+  .screen-body-item:nth-child(3) { border-right: 1px solid #E8E2DB; }
+}
+
+@media (max-width: 600px) {
+  .screen-body { grid-template-columns: 1fr; }
+  .screen-body-item { border-right: none !important; border-bottom: 1px solid #E8E2DB; padding: 28px 20px; min-height: auto; }
+  .screen-body-item:last-child { border-bottom: none; }
+  .screen-body-item:nth-child(2) { border-right: none !important; border-bottom: 2px solid #E8E2DB; }
+}

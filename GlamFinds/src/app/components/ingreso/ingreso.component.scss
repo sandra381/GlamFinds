@@ -1,0 +1,322 @@
+/* =================================================================
+   GlamFinds — Login Page · Full-bleed image + centered card
+   ================================================================= */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; }
+
+/* ── Fondo: imagen a pantalla completa ── */
+.container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  width: 100%;
+  overflow: hidden;
+  background-color: #0A0A0A;
+}
+
+/* Imagen de fondo */
+.container > .bg-image {
+  position: absolute;
+  inset: 0;
+  background-image: url(https://images.unsplash.com/photo-1553544260-f87e671974ee?q=80&w=1400&auto=format&fit=crop);
+  background-size: cover;
+  background-position: center 20%;
+}
+
+/* Overlay: tinte dorado cálido + viñeta */
+.container::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(
+      135deg,
+      rgba(180, 130, 70,  0.30) 0%,
+      rgba(160, 100, 40,  0.20) 40%,
+      rgba(100,  60, 20,  0.35) 100%
+    );
+  mix-blend-mode: multiply;
+}
+
+/* Segunda capa: oscurecimiento perimetral */
+.container::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse at center,
+    transparent          30%,
+    rgba(0, 0, 0, 0.45)  100%
+  );
+  pointer-events: none;
+}
+
+/* ── Card central ── */
+.login-card {
+  position: relative;
+  z-index: 1;
+  width: 380px;
+  padding: 52px 44px 48px;
+  background: rgba(253, 250, 247, 0.97);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-radius: 4px;
+  box-shadow:
+    0 40px 100px rgba(0, 0, 0, 0.40),
+    0 8px  28px  rgba(0, 0, 0, 0.22);
+}
+
+/* Línea dorada izquierda — acento minimal */
+.login-card::before {
+  content: '';
+  position: absolute;
+  top: 52px; left: 0;
+  width: 3px;
+  height: 44px;
+  background: #C4A882;
+  border-radius: 0 2px 2px 0;
+}
+
+/* ── Marca dentro de la card ── */
+.card-brand {
+  margin-bottom: 36px;
+}
+
+.card-brand__name {
+  font-family: 'Playfair Display', serif;
+  font-size: 34px;
+  font-weight: 700;
+  color: #0A0A0A;
+  letter-spacing: -1px;
+  line-height: 1;
+  margin: 0 0 8px;
+}
+
+.card-brand__tag {
+  display: block;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #C4A882;
+}
+
+/* ── Formulario ── */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.form-field {
+  height: 50px;
+  padding: 0 18px;
+  border: none;
+  border-bottom: 2px solid transparent;
+  border-radius: 6px 6px 0 0;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  color: #2A2A2A;
+  outline: none;
+  background: linear-gradient(135deg, rgba(196, 168, 130, 0.08) 0%, rgba(212, 165, 165, 0.06) 100%);
+  margin-top: 16px;
+  transition: background 0.2s ease, border-color 0.2s ease;
+
+  &::placeholder { color: #B8AFA8; }
+  &:focus {
+    background: linear-gradient(135deg, rgba(196, 168, 130, 0.14) 0%, rgba(212, 165, 165, 0.10) 100%);
+    border-bottom-color: #C4A882;
+  }
+}
+
+/* Password show/hide wrapper */
+.pass-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+
+  .form-field {
+    width: 100%;
+    padding-right: 44px;
+    margin-top: 0;
+  }
+}
+
+.pass-toggle {
+  position: absolute;
+  right: 10px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  color: #B8AFA8;
+  transition: color 0.2s ease;
+
+  mat-icon { font-size: 18px; width: 18px; height: 18px; }
+  &:hover { color: #C4A882; }
+}
+
+/* Botón login */
+.login-btn {
+  margin-top: 20px;
+  height: 50px;
+  border: none;
+  background: linear-gradient(135deg, #C4A882 0%, #D4A5A5 100%);
+  border-radius: 8px;
+  color: #FFFFFF;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  cursor: pointer;
+  box-shadow: 0 4px 18px rgba(196, 168, 130, 0.40);
+  transition: background 0.25s ease, box-shadow 0.25s ease, transform 0.15s ease;
+
+  &:hover  {
+    background: linear-gradient(135deg, #B8966E 0%, #C4909A 100%);
+    box-shadow: 0 6px 24px rgba(196, 168, 130, 0.55);
+    transform: translateY(-1px);
+  }
+  &:active { transform: translateY(0); box-shadow: 0 2px 10px rgba(196, 168, 130, 0.30); }
+}
+
+/* Link de registro */
+.register-link {
+  margin: 18px 0 0;
+  text-align: center;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  color: #8A8A8A;
+
+  a {
+    color: #C4A882;
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: none;
+    margin-left: 4px;
+    transition: color 0.2s ease;
+    &:hover { color: #A8896A; text-decoration: underline; }
+  }
+}
+
+/* ── Tagline esquina inferior derecha ── */
+.corner-tagline {
+  position: absolute;
+  bottom: 32px;
+  right: 40px;
+  z-index: 2;
+  font-family: 'Playfair Display', serif;
+  font-size: 12px;
+  font-style: italic;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.55);
+  letter-spacing: 0.5px;
+  pointer-events: none;
+}
+
+/* ── Animación de entrada ── */
+.animation {
+  animation: fadeUp 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.a1 { animation-delay: 0.08s; }
+.a2 { animation-delay: 0.16s; }
+.a3 { animation-delay: 0.22s; }
+.a4 { animation-delay: 0.28s; }
+.a5 { animation-delay: 0.34s; }
+.a6 { animation-delay: 0.40s; }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+
+/* ── Responsive ── */
+@media (max-width: 500px) {
+  .login-card {
+    width: 92vw;
+    padding: 40px 28px 36px;
+  }
+}
+
+/* ── Toast — editorial luxury style ────────────────────────── */
+.gl-toast {
+  position: fixed;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: stretch;
+  width: 320px;
+  border-radius: 6px;
+  overflow: hidden;
+  z-index: 9999;
+  background: rgba(10, 10, 10, 0.97);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  box-shadow:
+    0 20px 60px rgba(0, 0, 0, 0.45),
+    0 4px  16px rgba(0, 0, 0, 0.25);
+  animation: toastIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+
+  &.gl-toast--out {
+    animation: toastOut 0.4s cubic-bezier(0.4, 0, 1, 1) forwards;
+  }
+}
+
+/* Barra de acento izquierda */
+.gl-toast__bar {
+  width: 3px;
+  flex-shrink: 0;
+  background: #C4A882; /* dorado por defecto (éxito) */
+}
+.gl-toast--error .gl-toast__bar {
+  background: #c96b6b;
+}
+
+/* Cuerpo del texto */
+.gl-toast__body {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 16px 20px;
+}
+
+/* Etiqueta superior: tipo de mensaje */
+.gl-toast__label {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.35);
+}
+.gl-toast--success .gl-toast__label { color: #C4A882; }
+.gl-toast--error   .gl-toast__label { color: #c96b6b; }
+
+/* Mensaje principal */
+.gl-toast__msg {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 300;
+  letter-spacing: 0.15px;
+  color: rgba(255, 255, 255, 0.90);
+  line-height: 1.4;
+}
+
+/* ── Animaciones ── */
+@keyframes toastIn {
+  0%   { opacity: 0; transform: translateX(-50%) translateY(20px); }
+  100% { opacity: 1; transform: translateX(-50%) translateY(0);    }
+}
+@keyframes toastOut {
+  0%   { opacity: 1; transform: translateX(-50%) translateY(0);    }
+  100% { opacity: 0; transform: translateX(-50%) translateY(12px); }
+}

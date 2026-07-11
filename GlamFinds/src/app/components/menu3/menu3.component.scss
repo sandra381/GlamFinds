@@ -1,0 +1,156 @@
+/* GlamFinds — Admin Top Navigation (menu3) — matches menu2 visual language */
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap');
+@import url('https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css');
+
+.app {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: auto;
+  background: transparent;
+  border-radius: 0;
+
+  header.sub-menu {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #0A0A0A;        /* Admin uses black header to differ from user nav */
+    border-bottom: 1px solid #1E1E1E;
+    height: 64px;
+    padding: 0 28px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+
+    .title { display: none; }
+
+    .menu {
+      display: flex;
+      list-style: none;
+      height: 100%;
+      gap: 0;
+      margin: 0;
+      padding: 0;
+      align-items: center;
+
+      li {
+        display: flex;
+        align-items: center;
+        height: 100%;
+        position: relative;
+        margin: 0;
+
+        a {
+          font-family: 'DM Sans', sans-serif;
+          font-size: 10px;
+          font-weight: 600;
+          letter-spacing: 1.2px;
+          text-transform: uppercase;
+          color: rgba(255, 255, 255, 0.5);
+          text-decoration: none;
+          padding: 0 12px;
+          height: 100%;
+          display: flex;
+          align-items: center;
+          transition: color 0.2s ease;
+          position: relative;
+
+          &::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 12px;
+            right: 12px;
+            height: 2px;
+            background: #C4A882;
+            border-radius: 1px 1px 0 0;
+            transform: scaleX(0);
+            transition: transform 0.25s ease;
+          }
+        }
+
+        a.active,
+        a:hover {
+          color: #FFFFFF;
+          &::after { transform: scaleX(1); }
+        }
+      }
+    }
+
+    .user-options {
+      display: flex;
+      align-items: center;
+      margin-right: 0;
+
+      .icon.user-img {
+        cursor: pointer;
+        margin: 0;
+        padding: 0;
+        border: none;
+        box-shadow: none;
+
+        img {
+          width: 36px;
+          height: 36px;
+          border-radius: 50%;
+          object-fit: cover;
+          border: 2px solid #C4A882;
+          transition: opacity 0.2s ease;
+          display: block;
+        }
+        &:hover img { opacity: 0.8; }
+
+        .badge { display: none; }
+      }
+    }
+  }
+}
+
+/* Dropdown */
+.modal {
+  background: #FFFFFF;
+  border-radius: 14px;
+  padding: 8px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  border: 1px solid #E8E2DB;
+  min-width: 160px;
+  transform: none;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+.options { display: flex; flex-direction: column; }
+.btn {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  color: #1A1A1A;
+  background: none;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+  transition: background 0.2s ease;
+  margin: 0;
+  box-shadow: none;
+}
+.btn:hover { background: #F7F3EE; box-shadow: none; transform: none; }
+.btn:last-child { margin: 0; }
+
+nav ul { display: flex; flex-wrap: wrap; list-style: none; padding: 0; margin: 0; }
+nav ul li { margin: 0; }
+nav ul li a {
+  color: rgba(255, 255, 255, 0.5);
+  padding: 0 12px;
+  border-radius: 0;
+  letter-spacing: 1.2px;
+  text-decoration: none;
+  font-size: 10px;
+  font-weight: 600;
+  transition: color 0.2s ease;
+}
+nav ul li a.active,
+nav ul li a:hover { color: #FFFFFF; background: transparent; }
+
+img { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; }

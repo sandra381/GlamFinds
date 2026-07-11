@@ -1,0 +1,19 @@
+<div class="fondo">
+  <div class="formulario">
+    <br>
+    <h1 class="titulo">Modificar</h1>
+    <br>
+    <div class="example-form">
+      <div class="form2">
+      <mat-form-field class="example-full-width" appearance="outline">
+        <mat-label>Comentario</mat-label>
+        <mat-icon matSuffix>image</mat-icon>
+        <input [(ngModel)]="commentario.comments" type="url" matInput>
+      </mat-form-field>
+      </div>
+      <div class="button-container">
+        <button class="example-button" mat-raised-button color="primary" (click)="editComment()">Guardar Cambio</button>
+      </div>
+    </div>
+  </div>
+</div>

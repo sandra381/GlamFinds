@@ -1,0 +1,9 @@
+<div>
+  <h2>Clasificación de Tipos de Zapatos</h2>
+  <input type="file" (change)="onFileSelected($event)" />
+  <div *ngIf="imageSrc">
+    <img id="uploadedImage" [src]="imageSrc" alt="Imagen seleccionada" width="200" />
+  </div>
+  <p *ngIf="predictions">Predicciones: {{ predictions }}</p>
+</div>
+

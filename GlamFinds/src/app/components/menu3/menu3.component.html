@@ -1,0 +1,27 @@
+<div class="app">
+    <header class="sub-menu">
+        <div class="title"></div>
+            <nav>
+                <ul class="menu">
+                    <li><a href="/agregar">Agregar Publicaciones</a></li>
+                    <li><a href="/tablaTendencias">Tendencias</a></li>
+                    <li><a href="/tablaRopa">Ropa</a></li>
+                    <li><a href="/tablaMaquillaje">Maquillaje</a> </li>
+                    <li><a href="/tablaAccesorios">Accesorios</a></li>
+                    <li><a href="/tablaZapatos">Zapatos</a></li>
+                    <li><a href="/tablaDescuentos">Descuentos</a></li>
+                    <li><a href="/tablaDups">Dups</a></li>
+                </ul>
+            </nav>
+            <div class="user-options">
+                <div class="icon user-img" [matMenuTriggerFor]="menu" #menuTrigger><img src="assets/img/{{user.imagen}}" width="36"/></div>
+                <mat-menu #menu="matMenu">
+                    <div class="modal">
+                        <div class="options">
+                            <button class="btn" mat-menu-item (click)="cerrarSesion()">Cerrar Sesion</button>
+                        </div>
+                    </div>
+                </mat-menu>
+            </div>
+    </header>
+</div>
