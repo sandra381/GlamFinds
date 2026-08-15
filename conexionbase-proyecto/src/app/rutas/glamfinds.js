@@ -372,6 +372,7 @@ router.post('/agregarPost', upload.single('imagen'), async (req, res) => {
                 });
                 garments = aiResponse.data.garments || [];
                 makeupZones = aiResponse.data.makeup_zones || [];
+                console.log("MAKEUP ZONES:", JSON.stringify(makeupZones, null, 2));
                 image_width = aiResponse.data.image_width || null;
                 image_height = aiResponse.data.image_height || null;
                 face_detected = aiResponse.data.face_detected || false;
@@ -510,7 +511,9 @@ router.post('/agregarPost', upload.single('imagen'), async (req, res) => {
 });
 
 // Obtener posts de categoría 1 (tendencias)
+// Obtener posts con prendas y zonas de maquillaje
 router.get('/obtener', (req, res) => {
+
     const queryPosts = `
         SELECT 
             p.id_post,
@@ -520,6 +523,10 @@ router.get('/obtener', (req, res) => {
             p.categoria,
             p.image_width,
             p.image_height,
+            p.face_detected,
+            p.skin_ref_r,
+            p.skin_ref_g,
+            p.skin_ref_b,
             u.id_user,
             u.usuario,
             c.id_categoria,
@@ -529,13 +536,25 @@ router.get('/obtener', (req, res) => {
         JOIN categorias c ON p.categoria = c.id_categoria
         ORDER BY p.id_post DESC
     `;
+
     conn.query(queryPosts, (error, posts) => {
+
         if (error) {
             console.error('Error en query de posts:', error);
-            return res.json({ status: 0, mensaje: "Error en BD", datos: [] });
+            return res.json({
+                status: 0,
+                mensaje: "Error en BD",
+                datos: []
+            });
         }
+
+        // ==========================================
+        // OBTENER PRENDAS
+        // ==========================================
         const obtenerPrendas = (id_post) => {
+
             return new Promise((resolve, reject) => {
+
                 const queryPrendas = `
                     SELECT 
                         label,
@@ -558,36 +577,203 @@ router.get('/obtener', (req, res) => {
                     FROM post_prendas
                     WHERE id_post = ?
                 `;
+
                 conn.query(queryPrendas, [id_post], (err, filas) => {
-                    if (err) reject(err);
-                    else resolve(filas);
+
+                    if (err) {
+                        reject(err);
+                    } else {
+
+                        const prendasFormateadas = filas.map(p => ({
+                            label: p.label,
+                            label_id: p.label_id,
+                            confidence: p.confidence,
+
+                            bbox: [
+                                p.bbox_x1,
+                                p.bbox_y1,
+                                p.bbox_x2,
+                                p.bbox_y2
+                            ],
+
+                            colors: {
+                                vibrant: [
+                                    p.color_vibrant_r,
+                                    p.color_vibrant_g,
+                                    p.color_vibrant_b
+                                ],
+
+                                muted: [
+                                    p.color_muted_r,
+                                    p.color_muted_g,
+                                    p.color_muted_b
+                                ],
+
+                                third: [
+                                    p.color_third_r,
+                                    p.color_third_g,
+                                    p.color_third_b
+                                ]
+                            },
+
+                            mask_b64: p.mask_b64
+                        }));
+
+                        resolve(prendasFormateadas);
+                    }
                 });
             });
         };
-        Promise.all(posts.map(async (post) => {
-            const prendas = await obtenerPrendas(post.id_post);
-            const prendasFormateadas = prendas.map(p => ({
-                label: p.label,
-                label_id: p.label_id,
-                confidence: p.confidence,
-                bbox: [p.bbox_x1, p.bbox_y1, p.bbox_x2, p.bbox_y2],
-                colors: {
-                    vibrant: [p.color_vibrant_r, p.color_vibrant_g, p.color_vibrant_b],
-                    muted: [p.color_muted_r, p.color_muted_g, p.color_muted_b],
-                    third: [p.color_third_r, p.color_third_g, p.color_third_b]
-                },
-                mask_b64: p.mask_b64
-            }));
-            return { ...post, prendas: prendasFormateadas };
-        }))
+
+
+        // ==========================================
+        // OBTENER ZONAS DE MAQUILLAJE
+        // ==========================================
+        const obtenerMaquillaje = (id_post) => {
+
+            return new Promise((resolve, reject) => {
+
+                const queryMakeup = `
+                    SELECT
+                        id,
+                        zone,
+                        has_makeup,
+                        distance_to_skin,
+                        color_name,
+                        product_link,
+
+                        vibrant_r,
+                        vibrant_g,
+                        vibrant_b,
+
+                        muted_r,
+                        muted_g,
+                        muted_b,
+
+                        third_r,
+                        third_g,
+                        third_b
+
+                    FROM post_makeup_zones
+                    WHERE id_post = ?
+                `;
+
+                conn.query(queryMakeup, [id_post], (err, filas) => {
+
+                    if (err) {
+                        reject(err);
+                    } else {
+
+                        const maquillajeFormateado = filas.map(m => ({
+
+                            id: m.id,
+
+                            zone: m.zone,
+
+                            has_makeup: Boolean(m.has_makeup),
+
+                            distance_to_skin: m.distance_to_skin,
+
+                            color_name: m.color_name,
+
+                            product_link: m.product_link,
+
+                            colors: {
+
+                                vibrant: [
+                                    m.vibrant_r,
+                                    m.vibrant_g,
+                                    m.vibrant_b
+                                ],
+
+                                muted: [
+                                    m.muted_r,
+                                    m.muted_g,
+                                    m.muted_b
+                                ],
+
+                                third: [
+                                    m.third_r,
+                                    m.third_g,
+                                    m.third_b
+                                ]
+
+                            }
+
+                        }));
+
+                        resolve(maquillajeFormateado);
+                    }
+                });
+
+            });
+        };
+
+
+        // ==========================================
+        // ARMAR TODOS LOS POSTS
+        // ==========================================
+
+        Promise.all(
+
+            posts.map(async (post) => {
+
+                const prendas = await obtenerPrendas(post.id_post);
+
+                const maquillaje = await obtenerMaquillaje(post.id_post);
+
+                return {
+
+                    ...post,
+
+                    // Información de rostro
+                    face_detected: Boolean(post.face_detected),
+
+                    skin_reference_color:
+                        post.skin_ref_r !== null
+                            ? [
+                                post.skin_ref_r,
+                                post.skin_ref_g,
+                                post.skin_ref_b
+                            ]
+                            : null,
+
+                    // Prendas detectadas
+                    prendas: prendas,
+
+                    // Maquillaje detectado
+                    makeup_zones: maquillaje
+
+                };
+
+            })
+
+        )
+
         .then(resultado => {
-            res.json({ status: 1, mensaje: "Info obtenida", datos: resultado });
+
+            res.json({
+                status: 1,
+                mensaje: "Info obtenida",
+                datos: resultado
+            });
+
         })
+
         .catch(err => {
-            console.error('Error al obtener prendas:', err);
-            res.json({ status: 0, mensaje: "Error al cargar prendas", datos: [] });
+
+            console.error('Error al obtener prendas o maquillaje:', err);
+
+            res.json({
+                status: 0,
+                mensaje: "Error al cargar información",
+                datos: []
+            });
+
         });
+
     });
+
 });
 
 // Otras rutas de posts por categoría (mantengo las que estaban)
