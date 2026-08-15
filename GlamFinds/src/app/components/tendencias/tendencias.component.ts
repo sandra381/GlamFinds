@@ -113,7 +113,18 @@ export class TendenciasComponent implements OnInit {
     this.cargarCategorias();
     this.backend1.obtenerTendencias().subscribe(async x => {
       this.dataSource = x.datos;
-      console.log(x.datos);
+      console.log('Datos recibidos:', this.dataSource); // <-- VERIFICAR EN CONSOLA
+
+      // ========== DEBUG: Verificar que llegue makeup_zones ==========
+      this.dataSource.forEach(post => {
+        if (post.makeup_zones && post.makeup_zones.length) {
+          console.log(`Post ${post.id_post} tiene maquillaje:`, post.makeup_zones);
+          post.makeup_zones.forEach(zone => {
+            console.log(`  Zona: ${zone.zone}, product_link: ${zone.product_link}`);
+          });
+        }
+      });
+
       this.filteredItems = [...this.dataSource];
 
       this.dataSource.forEach(post => {
@@ -488,6 +499,77 @@ export class TendenciasComponent implements OnInit {
     if (!dims) return '0%';
     const leftPixel = bbox[0] * (dims.width / articulo.image_width);
     return (leftPixel / dims.width * 100) + '%';
+  }
+
+  // ========== NUEVOS MÉTODOS PARA MAQUILLAJE ==========
+
+  /**
+   * Genera URL de búsqueda para maquillaje usando el product_link si existe,
+   * o crea una búsqueda con el nombre de la zona y el color vibrante.
+   */
+  getMakeupSearchUrl(zone: any, articulo: any): string {
+    if (zone.product_link) {
+      return zone.product_link;
+    }
+    const colorName = this.getColorName(zone.colors.vibrant);
+    const query = `${zone.zone} maquillaje ${colorName}`;
+    return `https://www.google.com/search?q=${encodeURIComponent(query)}&tbm=isch`;
+  }
+
+  /**
+   * Devuelve la posición vertical (top en %) para el botón de maquillaje.
+   * Usa un mapeo por zona porque no tenemos bbox.
+   */
+  getMakeupTopPosition(zone: any, articulo: any): string {
+    const zonePositions: { [key: string]: string } = {
+      'labios': '75%',
+      'ojos': '25%',
+      'cejas': '15%',
+      'mejillas': '45%',
+      'frente': '10%',
+      'barbilla': '80%',
+      'nariz': '40%',
+      'párpados': '30%',
+      'pestañas': '20%',
+      'delineado': '25%'
+    };
+    const zoneLower = zone.zone.toLowerCase();
+    for (const key in zonePositions) {
+      if (zoneLower.includes(key)) {
+        return zonePositions[key];
+      }
+    }
+    // Si no hay mapeo, usar posición basada en índice
+    const index = articulo.makeup_zones.indexOf(zone);
+    const defaultPositions = ['10%', '30%', '50%', '70%', '20%', '60%'];
+    return defaultPositions[index % defaultPositions.length];
+  }
+
+  /**
+   * Devuelve la posición horizontal (left en %) para el botón de maquillaje.
+   */
+  getMakeupLeftPosition(zone: any, articulo: any): string {
+    const zonePositions: { [key: string]: string } = {
+      'labios': '50%',
+      'ojos': '30%',
+      'cejas': '35%',
+      'mejillas': '20%',
+      'frente': '50%',
+      'barbilla': '50%',
+      'nariz': '50%',
+      'párpados': '30%',
+      'pestañas': '30%',
+      'delineado': '30%'
+    };
+    const zoneLower = zone.zone.toLowerCase();
+    for (const key in zonePositions) {
+      if (zoneLower.includes(key)) {
+        return zonePositions[key];
+      }
+    }
+    const index = articulo.makeup_zones.indexOf(zone);
+    const defaultPositions = ['20%', '40%', '60%', '80%', '10%', '90%'];
+    return defaultPositions[index % defaultPositions.length];
   }
 
   // ========== MÉTODOS DE MODALES Y EMOJIS ==========

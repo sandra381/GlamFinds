@@ -372,7 +372,6 @@ router.post('/agregarPost', upload.single('imagen'), async (req, res) => {
                 });
                 garments = aiResponse.data.garments || [];
                 makeupZones = aiResponse.data.makeup_zones || [];
-                console.log("MAKEUP ZONES:", JSON.stringify(makeupZones, null, 2));
                 image_width = aiResponse.data.image_width || null;
                 image_height = aiResponse.data.image_height || null;
                 face_detected = aiResponse.data.face_detected || false;
@@ -630,9 +629,7 @@ router.get('/obtener', (req, res) => {
         // OBTENER ZONAS DE MAQUILLAJE
         // ==========================================
         const obtenerMaquillaje = (id_post) => {
-
             return new Promise((resolve, reject) => {
-
                 const queryMakeup = `
                     SELECT
                         id,
@@ -641,29 +638,19 @@ router.get('/obtener', (req, res) => {
                         distance_to_skin,
                         color_name,
                         product_link,
-
-                        vibrant_r,
-                        vibrant_g,
-                        vibrant_b,
-
-                        muted_r,
-                        muted_g,
-                        muted_b,
-
-                        third_r,
-                        third_g,
-                        third_b
-
+                        vibrant_r, vibrant_g, vibrant_b,
+                        muted_r, muted_g, muted_b,
+                        third_r, third_g, third_b
                     FROM post_makeup_zones
-                    WHERE id_post = ?
+                    WHERE id_post = ? ;
                 `;
 
                 conn.query(queryMakeup, [id_post], (err, filas) => {
-
                     if (err) {
+                        console.error('❌ Error en query de maquillaje:', err);
                         reject(err);
                     } else {
-
+                        console.log(`✅ Filas encontradas para post ${id_post}: ${filas.length}`); // <--- LOG
                         const maquillajeFormateado = filas.map(m => ({
 
                             id: m.id,
@@ -701,14 +688,11 @@ router.get('/obtener', (req, res) => {
                             }
 
                         }));
-
                         resolve(maquillajeFormateado);
                     }
                 });
-
             });
         };
-
 
         // ==========================================
         // ARMAR TODOS LOS POSTS

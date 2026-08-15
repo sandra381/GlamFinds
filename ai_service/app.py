@@ -206,8 +206,8 @@ MAKEUP_THRESHOLDS = {
     "lips": 18.0,
     "left_eye": 15.0,
     "right_eye": 15.0,
-    "left_cheek": 12.0,
-    "right_cheek": 12.0
+    "left_cheek": 10.0,
+    "right_cheek": 10.0
 }
 # ========== FUNCIONES AUXILIARES ==========
 def get_dominant_colors_from_array(img_array, k=3):

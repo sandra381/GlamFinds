@@ -6,7 +6,7 @@
       <mat-drawer-content><app-menu2></app-menu2>
         <section class="app-content">
 
-          <!-- ── Filter bar (preserved) ─────────── -->
+          <!-- ── Filter bar ─────────── -->
           <div class="selectors">
             <div class="color-selector">
               <div class="filters">
@@ -97,12 +97,9 @@
               <span *ngFor="let cat of categorias" class="feed-chip" [ngClass]="{'feed-chip--active': activeChip === cat.name_categoria}"(click)="filtrarChip(cat.name_categoria)">
                 {{ cat.name_categoria }}</span>
             </div>
-
-
-
           </div>
 
-          <!-- ── Skeleton screens (while loading) ─────────── -->
+          <!-- ── Skeleton screens ─────────── -->
           <div class="skeleton-grid" *ngIf="dataSource.length === 0 && filteredItems.length === 0">
             <div class="sk-card" *ngFor="let s of [1,2,3,4,5,6]">
               <div class="skeleton sk-img"></div>
@@ -116,7 +113,7 @@
             </div>
           </div>
 
-          <!-- ── Masonry feed (dynamic garments integrated) ── -->
+          <!-- ── Masonry feed ── -->
           <ul class="projects" *ngIf="dataSource.length > 0 || filteredItems.length > 0">
             <ng-container *ngFor="let articulo of filteredItems.length > 0 ? filteredItems : dataSource; let i = index">
               <div class="containers">
@@ -124,21 +121,21 @@
                 <!-- CSS modal trigger -->
                 <input type="checkbox" [id]="'p'+articulo.id_post" class="modal-toggle">
 
-                <!-- ── CARD (Pinterest style) ─────────────────────── -->
+                <!-- ── CARD ─────────────────────── -->
                 <div class="pin-card">
 
                   <!-- Image area -->
                   <div class="pin-media">
 
-                    <!-- Category badge top-left -->
+                    <!-- Category badge -->
                     <span class="badge" [ngClass]="getBadgeClass(articulo.name_categoria)">
                         {{ articulo.name_categoria || 'Sin categoría' }}
                     </span>
 
-                    <!-- Hover overlay (CSS only) -->
+                    <!-- Hover overlay -->
                     <div class="pin-overlay"></div>
 
-                    <!-- Clickable image → opens modal -->
+                    <!-- Clickable image -->
                     <label [for]="'p'+articulo.id_post" class="pin-media-label">
                       <ng-container *ngIf="isImage(articulo.imagen); else cardVid">
                         <img class="pin-img" [src]="'assets/img/'+articulo.imagen" alt="post" loading="lazy">
@@ -151,7 +148,7 @@
                       </ng-template>
                     </label>
 
-                    <!-- 🔥 DYNAMIC GARMENT CIRCLES (bottom‑right) 🔥 -->
+                    <!-- 🔥 PRENDAS hotspots -->
                     <div class="hotspot-group" *ngIf="articulo.prendas && articulo.prendas.length">
                       <a *ngFor="let prenda of articulo.prendas | slice:0:3; let idx = index"
                          [href]="getSearchUrl(prenda, articulo)"
@@ -160,6 +157,18 @@
                          rel="noopener noreferrer"
                          [title]="prenda.label + ' (' + (prenda.confidence | number:'1.0-0') + '%)'">
                          {{ idx + 1 }}
+                      </a>
+                    </div>
+
+                    <!-- ========== NUEVO: MAQUILLAJE HOTSPOTS ========== -->
+                    <div class="hotspot-group" *ngIf="articulo.makeup_zones && articulo.makeup_zones.length">
+                      <a *ngFor="let zone of articulo.makeup_zones | slice:0:3; let idx = index"
+                         [href]="zone.product_link ? zone.product_link : getMakeupSearchUrl(zone, articulo)"
+                         class="hotspot makeup-hotspot"
+                         target="_blank"
+                         rel="noopener noreferrer"
+                         [title]="zone.zone + (zone.has_makeup ? ' (con maquillaje)' : ' (sin maquillaje)')">
+                         💄{{ idx + 1 }}
                       </a>
                     </div>
                   </div>
@@ -182,20 +191,21 @@
                   </div>
                 </div>
 
-                <!-- ── MODAL (expanded view) ────────────────────────── -->
+                <!-- ── MODAL ────────────────────────── -->
                 <div class="post-modal">
                   <label [for]="'p'+articulo.id_post" class="modal-backdrop"></label>
 
                   <div class="modal-box">
 
-                    <!-- LEFT: image + dynamic garment buttons -->
+                    <!-- LEFT: image + dynamic buttons -->
                     <div class="modal-left" [ngClass]="'cat-bg-'+(i%4)">
 
-                      <!-- Main media (image or video) -->
+                      <!-- Main media -->
                       <ng-container *ngIf="isImage(articulo.imagen); else modalVid">
                         <div class="modal-img-wrap" style="position: relative;">
                           <img [src]="'assets/img/'+articulo.imagen" alt="post" class="modal-img" loading="lazy"
                               (load)="onImageLoad($event, articulo)">
+                          <!-- PRENDAS buttons over image -->
                           <ng-container *ngIf="articulo.prendas && articulo.prendas.length">
                             <ng-container *ngFor="let prenda of articulo.prendas | slice:0:6">
                               <a *ngIf="prenda.bbox && prenda.bbox.length === 4"
@@ -212,9 +222,25 @@
                               </a>
                             </ng-container>
                           </ng-container>
+
+                          <!-- ========== NUEVO: BOTONES DE MAQUILLAJE SOBRE LA IMAGEN ========== -->
+                          <ng-container *ngIf="articulo.makeup_zones && articulo.makeup_zones.length">
+                            <ng-container *ngFor="let zone of articulo.makeup_zones | slice:0:6">
+                              <a *ngIf="zone.colors && zone.colors.vibrant"
+                                [href]="zone.product_link ? zone.product_link : getMakeupSearchUrl(zone, articulo)"
+                                class="buttons garment-btn makeup-btn"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                [style.top]="getMakeupTopPosition(zone, articulo)"
+                                [style.left]="getMakeupLeftPosition(zone, articulo)"
+                                [style.position]="'absolute'"
+                                [title]="zone.zone + (zone.has_makeup ? ' ✅' : ' ❌')">
+                                💄
+                              </a>
+                            </ng-container>
+                          </ng-container>
                       </div>
                       </ng-container>
-
 
                       <ng-template #modalVid>
                         <video class="modal-vid" autoplay [muted]="true" loop playsinline controls width="100%">
@@ -223,7 +249,7 @@
                         </video>
                       </ng-template>
 
-                      <!-- 🔥 DYNAMIC TAGGED ITEMS (list below image) 🔥 -->
+                      <!-- PRENDAS tagged list -->
                       <div class="tagged-section" *ngIf="articulo.prendas && articulo.prendas.length">
                         <p class="tagged-title">PRENDAS ETIQUETADAS</p>
                         <div class="tagged-list">
@@ -236,12 +262,26 @@
                           </a>
                         </div>
                       </div>
+
+                      <!-- ========== NUEVO: MAQUILLAJE ETIQUETADO ========== -->
+                      <div class="tagged-section" *ngIf="articulo.makeup_zones && articulo.makeup_zones.length">
+                        <p class="tagged-title">MAQUILLAJE RECOMENDADO</p>
+                        <div class="tagged-list">
+                          <a *ngFor="let zone of articulo.makeup_zones | slice:0:6"
+                             [href]="zone.product_link ? zone.product_link : getMakeupSearchUrl(zone, articulo)"
+                             target="_blank"
+                             class="tagged-pill makeup-pill"
+                             rel="noopener noreferrer">
+                            {{ zone.zone }} {{ zone.has_makeup ? '💄' : '🚫' }}
+                          </a>
+                        </div>
+                      </div>
                     </div>
 
-                    <!-- RIGHT: info panel (unchanged) -->
+                    <!-- RIGHT: info panel -->
                     <div class="modal-right">
 
-                      <!-- Header: avatar + name + follow + close X -->
+                      <!-- Header -->
                       <div class="modal-header-row">
                         <img class="modal-avatar" src="assets/img/{{perfil[articulo.id_user]?.imagen}}" loading="lazy" alt="avatar">
                         <div class="modal-user-info">
@@ -266,7 +306,7 @@
                         <!-- Description -->
                         <p class="modal-desc">{{articulo.descripcion}}</p>
 
-                        <!-- Stats row -->
+                        <!-- Stats -->
                         <div class="modal-stats">
                           <button mat-icon-button (click)="like(articulo.id_post, i)" class="stat-icon-btn">
                             <mat-icon [ngClass]="toggle[i] ? 'heart-active' : 'heart-inactive'">favorite</mat-icon>
@@ -288,18 +328,16 @@
 
                         <hr class="modal-divider">
 
-                        <!-- Comments section header -->
+                        <!-- Comments -->
                         <div class="modal-comments-header">
                           <span class="modal-comments-title">Comentarios</span>
                           <span class="modal-comments-count">{{comentarios[articulo.id_post]?.length || 0}}</span>
                         </div>
 
-                        <!-- Empty state -->
                         <p class="modal-empty-comments" *ngIf="!(comentarios[articulo.id_post]?.length)">
                           Sé el primero en comentar ✨
                         </p>
 
-                        <!-- Comments list -->
                         <div class="modal-comments">
                           <div class="mc-item" *ngFor="let val of comentarios[articulo.id_post] || []">
                             <div class="mc-avatar-circle">{{val.usuario?.[0]?.toUpperCase() || 'U'}}</div>
@@ -325,10 +363,9 @@
 
                       </div><!-- /modal-scroll -->
 
-                      <!-- Comment input pinned bottom -->
+                      <!-- Comment input -->
                       <div class="modal-input-wrap">
 
-                        <!-- Emoji picker panel -->
                         <div class="emoji-panel" *ngIf="showEmojiPicker[articulo.id_post]">
                           <button class="emoji-btn-item" *ngFor="let e of ['💅','👗','👠','👜','✨','🌸','💕','🔥','👒','💋','🛍️','🪞','💄','👛','🧣','🕶️','💍','🌷','🦋','⭐','😍','🤩','😊','😂','❤️','💯','🙌','👏','😘','🫶']"
                                   (click)="insertEmoji(e, articulo.id_post)">{{e}}</button>
