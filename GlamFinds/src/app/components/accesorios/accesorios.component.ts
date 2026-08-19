@@ -17,40 +17,61 @@ import { ImagecolorComponent } from '../imagecolor/imagecolor.component';
 import { MoodboardComponent } from '../moodboard/moodboard.component';
 import { RandlookComponent } from '../randlook/randlook.component';
 import { TryOnComponent } from '../try-on/try-on.component';
+
+// Tono de color con nombre en español y su equivalente RGB (usado para filtrar por color).
 interface ColorShade{
   name: string;
   rgb: [number, number, number];
 }
+// Nombre de una prenda/accesorio usado para filtrar los posts por tipo de artículo.
 interface Prenda{
   name: string;
 }
+
+// Componente del feed de la categoría "Accesorios" (ruta "/accesorios").
+// Muestra el listado de posts de accesorios estilo Pinterest (masonry), con
+// likes, comentarios, guardado en favoritos, filtro por color y por tipo de
+// prenda, y accesos rápidos a las herramientas (agregar post, extractor de
+// color, moodboard, look aleatorio, armario virtual).
 @Component({
   selector: 'app-accesorios',
   templateUrl: './accesorios.component.html',
   styleUrls: ['./accesorios.component.scss']
 })
 export class AccesoriosComponent {
+  // Todos los posts de accesorios obtenidos del backend, sin filtrar.
   dataSource: Array<Posts> = new Array<Posts>();
   filteredItems: Array<Posts> = [];  // Almacena los artículos filtrados por color
   filteredItem: Array<Posts> = [];  // Almacena los artículos filtrados por prenda
 
+  // Controla si se muestra el widget lateral (actualmente sin uso visible en el feed).
   showWidget: boolean = true;
 
+  // Comentarios de cada post, indexados por id_post.
   comentarios: Array<Comments2[]> = [];
+  // Datos de perfil (foto, usuario) del autor de cada post, indexados por id_user.
   perfil: Array<Usuario2> = [];
+  // Cantidad de likes de cada post, indexada por id_post.
   likes: Array<Likes_cant> = [];
   id_com: number;
+  // Texto que el usuario está escribiendo en el input de comentario de cada post, indexado por id_post.
   comentario: { [key: number]: string } = {};
+  // Estado visual de "like" (true/false) por índice del *ngFor.
   toggle: boolean[] = [];
+  // Estado visual de "guardado" (true/false) por índice del *ngFor.
   toggle1: boolean[] = [];
   id_lik: number;
   valores: Likes;
   id_us: number;
+  // Controla si el modal de filtro por color está abierto.
   isModalOpen: boolean = false;
+  // Controla si el modal de filtro por prenda está abierto.
   isModalOpen2: boolean = false;
   constructor(private router:Router,private backend1: BackendService,private activateRouter:ActivatedRoute,public dialog: MatDialog,public snackBar: MatSnackBar){ }
   showShortDesciption = true
+  // Id del usuario actualmente logueado, leído de localStorage.
   usuariolog = Number(localStorage.getItem('ids'));
+  // Modelo "plantilla" de un post (no se usa para mostrar datos reales, sirve de referencia de forma).
   articulo: any={
     id_post:0,
     descripcion:'',
@@ -72,6 +93,7 @@ export class AccesoriosComponent {
     link5:'',
     link6:'',
   }
+  // Modelo "plantilla" de un usuario (no se usa para mostrar datos reales, sirve de referencia de forma).
   user: any={
     id_user:0,
     usuario:'',
@@ -90,10 +112,13 @@ export class AccesoriosComponent {
   cant_like:0;
 
 
+  // Tonos de color seleccionados actualmente para filtrar (según el color general elegido).
   selectedColorTones: ColorShade[] = [];
 
+  // Prendas seleccionadas actualmente para filtrar (según la categoría de prenda elegida).
   selectedClothes: Prenda[] = [];
 
+  // Diccionario de tipos de prenda/accesorio disponibles para filtrar (clave = nombre en inglés usado por la IA).
   clothes: {[key:string]:Prenda[]} = {
     bag: [{ name: 'bag' }],
     belt: [{ name: 'belt' }],
@@ -131,6 +156,10 @@ export class AccesoriosComponent {
     watch: [{ name: 'watch' }]}
 
 
+  // Paleta grande de tonos de color en español (nombre + RGB), agrupados por
+  // color general (amarillo, azul, beige, blanco, gris, marron, morado,
+  // naranja, negro, rojo, rosa, verde). Se usa en seleccionarPorRango() para
+  // encontrar los posts cuyo color dominante coincide con el tono elegido.
   colorShades: { [key: string]: ColorShade[] } = {
         amarillo: [
           { name: 'almendra', rgb: [239, 222, 205] },
@@ -311,7 +340,7 @@ export class AccesoriosComponent {
           { name: 'rojo oscuro', rgb: [97, 21, 38] },
           { name: 'rojo ladrillo', rgb: [178, 34, 34] },
           { name: 'rojo oxido', rgb: [165, 42, 42] },
-          { name: 'rojo sangre', rgb: [150, 7, 38] }
+          { name: 'rojo sangre', rgb: [150, 7, 38] }
       ],
       rosa: [
           { name: 'rosa bebe', rgb: [255, 192, 203] },
@@ -350,6 +379,13 @@ export class AccesoriosComponent {
           { name: 'verde cafe', rgb: [53, 52, 46] },
       ]
     };
+
+  // Se ejecuta automáticamente al crear el componente.
+  // Pide al backend todos los posts de accesorios y, por cada uno:
+  // inicializa su campo de comentario vacío y sus estados de like/guardado
+  // en false; luego, en orden, carga los comentarios, el conteo de likes y
+  // el perfil del autor de cada post. Al terminar, restaura desde
+  // localStorage el estado de like/guardado que el usuario haya dejado en visitas anteriores.
   ngOnInit(): void {
     this.backend1.obtenerAccesorios().subscribe(async x => {
       this.dataSource = x.datos;
@@ -378,6 +414,9 @@ export class AccesoriosComponent {
     })
   }
 
+  // Pide al backend los comentarios de un post puntual y los guarda en
+  // "comentarios[id_com]". Devuelve una Promise para poder esperarla
+  // (await) desde ngOnInit() y cargar los datos en orden.
   async obtenerComentariosAsync(id_com: number) {
     return new Promise<void>(resolve => {
       this.backend1.obtenerComentarios(id_com).subscribe(async z => {
@@ -388,6 +427,8 @@ export class AccesoriosComponent {
     });
   }
 
+  // Pide al backend la cantidad de likes de un post puntual y la guarda en
+  // "likes[id_com]". Devuelve una Promise para poder esperarla (await).
   async countLikeAsync(id_com: number) {
     return new Promise<void>(resolve => {
       this.backend1.countLike(id_com).subscribe(y => {
@@ -398,6 +439,9 @@ export class AccesoriosComponent {
     });
 
   }
+
+  // Pide al backend los datos de perfil (foto, usuario) de un autor puntual
+  // y los guarda en "perfil[id_us]". Devuelve una Promise para poder esperarla (await).
   async obtenerPerfilAsync(id_us: number) {
     return new Promise<void>(resolve => {
       this.backend1.obtenerUsuario(id_us).subscribe(async a => {
@@ -407,6 +451,12 @@ export class AccesoriosComponent {
       });
     });
   }
+
+  // Se ejecuta cuando el usuario hace click en el botón/ícono de "like" de un post.
+  // Si el post ya estaba marcado como "me gusta" (toggle[index]), lo quita
+  // (llama a eliminarLike, baja el contador y apaga el estado visual);
+  // si no, lo agrega (llama a guardarLikes, sube el contador y enciende el
+  // estado visual). En ambos casos actualiza localStorage para recordar el estado.
   like(post: number, index: number) {
     var id_new = localStorage.getItem('ids');
     if (id_new) {
@@ -427,6 +477,14 @@ export class AccesoriosComponent {
       }
     }
   }
+
+  // Se ejecuta cuando el usuario hace click en el botón "Publicar" comentario de un post.
+  // 1) No hace nada si el texto está vacío.
+  // 2) Revisa el comentario contra una lista de palabras inapropiadas en
+  //    español (librería bad-words); si detecta alguna, muestra un aviso y no publica.
+  // 3) Si el comentario es válido, lo envía al backend (guardarComentarios)
+  //    y limpia el input; si falla, muestra un aviso de error.
+  // 4) Al final, recarga la página completa para reflejar el nuevo comentario.
   comment(post: number) {
     const comentario = this.comentario[post];
     if (comentario.trim() === '') {
@@ -475,6 +533,11 @@ export class AccesoriosComponent {
     }
     location.reload();
   }
+
+  // Se ejecuta cuando el usuario hace click en el botón/ícono de "guardar" de un post.
+  // Si el post ya estaba guardado (isSaved), lo quita de guardados
+  // (eliminarSave) y borra la marca en localStorage; si no, lo guarda
+  // (guardarFavoritos) y marca en localStorage que quedó guardado.
   save(post: number, index: number) {
     console.log("save");
     const id_new = localStorage.getItem('ids');
@@ -500,9 +563,16 @@ export class AccesoriosComponent {
         }
     }
   }
+
+  // Consulta en localStorage si un post en particular ya fue marcado como guardado.
   isSaved(post: number): boolean {
     return localStorage.getItem(`saveState_${post}`) === 'true';
   }
+
+  // Recorre todos los posts cargados y, para cada uno, revisa si en
+  // localStorage había quedado guardado un estado previo de "like" o
+  // "guardado" (de una visita anterior) y lo restaura en "toggle"/"toggle1".
+  // Se llama una sola vez, al terminar de cargar todos los posts en ngOnInit().
   private inicializarEstados() {
       for (let i = 0; i < this.dataSource.length; i++) {
         const post = this.dataSource[i].id_post;
@@ -518,6 +588,9 @@ export class AccesoriosComponent {
       }
     }
 
+  // Guarda en localStorage el estado actual de "like" y "guardado" de todos
+  // los posts, para poder recuperarlos en la próxima visita. Se llama cada
+  // vez que cambia un like (ver like()).
   private actualizarEstadoLocalStorage() {
       for (let i = 0; i < this.dataSource.length; i++) {
         const post = this.dataSource[i].id_post;
@@ -525,21 +598,40 @@ export class AccesoriosComponent {
         localStorage.setItem(`saveState_${post}`, JSON.stringify(this.toggle1[i]));
       }
     }
+
+  // Se ejecuta cuando el usuario hace click en el botón "Publicar" de la barra superior.
+  // Abre el diálogo modal para crear una publicación nueva (AgregarPubUComponent).
   openAgregar(){
     const dialogRef = this.dialog.open(AgregarPubUComponent, {restoreFocus: false,id: 'agregar'} );
   }
+
+  // Se ejecuta cuando el usuario hace click en el botón/ícono de la herramienta "extractor de color".
+  // Abre el diálogo modal ImagecolorComponent.
   open(){
     const dialogRef = this.dialog.open(ImagecolorComponent, {restoreFocus: false,id: 'color'} );
   }
+
+  // Se ejecuta cuando el usuario hace click en el botón/ícono de la herramienta "moodboard".
+  // Abre el diálogo modal MoodboardComponent.
   openMood(){
     const dialogRef = this.dialog.open(MoodboardComponent, {restoreFocus: false,id: 'board'} );
   }
+
+  // Se ejecuta cuando el usuario hace click en el botón/ícono de la herramienta "look aleatorio".
+  // Abre el diálogo modal RandlookComponent.
   openRand(){
     const dialogRef = this.dialog.open(RandlookComponent, {restoreFocus: false,id: 'look'} );
   }
+
+  // Se ejecuta cuando el usuario hace click en el botón/ícono de la herramienta "armario virtual" (try-on).
+  // Abre el diálogo modal TryOnComponent.
   openTryOn(){
     const dialogRef = this.dialog.open(TryOnComponent, {restoreFocus: false,id: 'tryon'} );
   }
+
+  // Se ejecuta cuando el usuario hace click en el botón "Editar" de un comentario propio.
+  // Abre el diálogo modal ModificarCommComponent, pasándole el id del post,
+  // el id del usuario logueado y el id del comentario a editar.
   openMod(postid:number,id_comment:number){
     var id_new = localStorage.getItem('ids');
     if (id_new) {
@@ -547,6 +639,8 @@ export class AccesoriosComponent {
     const dialogRef = this.dialog.open(ModificarCommComponent, {restoreFocus: false,id: 'mod',data:{id:postid,nav:navegante,comm:id_comment}} );}
   }
 
+  // Se ejecuta cuando el usuario hace click en el botón "Eliminar" de un comentario propio.
+  // Pide al backend borrar ese comentario y, al terminar, recarga la página.
   deleteComment(post: number , id_comment:number) {
     const id_new = localStorage.getItem('ids');
     if (id_new) {
@@ -561,6 +655,12 @@ export class AccesoriosComponent {
       );
     }
   }
+
+  // Se ejecuta cuando el usuario elige un color general en el modal de
+  // filtro por color (ej. "Azul", "Rojo"). Busca los tonos específicos de
+  // ese color en "colorShades" y filtra "dataSource" dejando en
+  // "filteredItems" solo los posts cuyo color vibrante, apagado o terciario
+  // coincida con alguno de esos tonos. Cierra el modal al terminar.
   seleccionarPorRango(colorGeneral: string) {
     this.selectedColorTones = this.colorShades[colorGeneral.toLowerCase()];
     if (!this.selectedColorTones || this.selectedColorTones.length === 0) {
@@ -579,6 +679,11 @@ export class AccesoriosComponent {
     });
     this.isModalOpen = false;
   }
+
+  // Se ejecuta cuando el usuario elige un tipo de prenda en el modal de
+  // filtro por prenda. Busca esa prenda en "clothes" y filtra "dataSource"
+  // dejando en "filteredItems" solo los posts que tengan esa prenda en
+  // alguno de sus campos prenda1..prenda6. Cierra el modal al terminar.
   seleccionarPorRopa(prenda: string) {
     this.selectedClothes = this.clothes[prenda.toLowerCase()] || [];
     if (!this.selectedClothes || this.selectedClothes.length === 0) {
@@ -604,20 +709,37 @@ export class AccesoriosComponent {
     });
     this.isModalOpen2 = false;
   }
+
+  // Se ejecuta cuando el usuario hace click en el botón "Limpiar filtro".
+  // Restaura "filteredItems" para que muestre todos los posts sin filtrar
+  // y cierra ambos modales de filtro.
   limpiarFiltro(): void {
     this.filteredItems = this.dataSource;
     this.isModalOpen = false;
     this.isModalOpen2 = false;
   }
+
+  // Función auxiliar usada en el HTML para decidir si un archivo es imagen
+  // (según su extensión) o video, y así renderizarlo con la etiqueta correcta.
   isImage(fileName: string): boolean {
     return fileName.match(/\.(jpeg|jpg|gif|png)$/) != null;
   }
+
+  // Se ejecuta cuando el usuario hace click en el botón para abrir/cerrar el
+  // modal de filtro por color. Alterna el valor de "isModalOpen".
   toggleModal() {
     this.isModalOpen = !this.isModalOpen;
   }
+
+  // Se ejecuta cuando el usuario hace click en el botón para abrir/cerrar el
+  // modal de filtro por prenda. Alterna el valor de "isModalOpen2".
   toggleModal2() {
     this.isModalOpen2 = !this.isModalOpen2;
   }
+
+  // Se ejecuta cuando el usuario hace click en cualquier parte de la
+  // ventana. Si el click fue exactamente sobre el fondo del modal de color
+  // (fuera del contenido), cierra ese modal.
   onWindowClick(event: Event) {
     const modal = document.getElementById('colorModal');
     if (event.target === modal) {

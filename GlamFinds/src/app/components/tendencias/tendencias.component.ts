@@ -21,13 +21,17 @@ import { RandlookComponent } from '../randlook/randlook.component';
 import { TryOnComponent } from '../try-on/try-on.component';
 import { WidgetComponent } from '../widget/widget.component';
 
+// Tono de color con nombre en español y su equivalente RGB (usado para filtrar por color).
 interface ColorShade {
   name: string;
   rgb: [number, number, number];
 }
+// Nombre de una prenda usada para filtrar los posts por tipo de artículo.
 interface Prenda {
   name: string;
 }
+// Zona del rostro donde se detectó (o no) maquillaje, con su color y el
+// link de producto sugerido (si corresponde).
 interface MakeupZone {
   zone: string;
   has_makeup: boolean;
@@ -41,30 +45,47 @@ interface MakeupZone {
   };
 }
 
+// Componente del feed PRINCIPAL "Tendencias" (ruta "/feed"), el más
+// completo de todos los feeds del proyecto. Además de likes, comentarios,
+// guardado y filtros por color/prenda, muestra sobre cada imagen botones de
+// "comprar" posicionados según las prendas y zonas de maquillaje que la IA
+// detectó en la foto (bounding boxes), tiene selector de emojis para
+// comentarios, chips de categoría, y al dar like también actualiza las
+// preferencias del usuario (para alimentar el feed "Para ti").
 @Component({
   selector: 'app-tendencias',
   templateUrl: './tendencias.component.html',
   styleUrls: ['./tendencias.component.scss']
 })
 export class TendenciasComponent implements OnInit {
+  // Todos los posts de tendencias obtenidos del backend, sin filtrar.
   dataSource: Array<Posts> = new Array<Posts>();
+  // Posts que se muestran actualmente en pantalla (tras aplicar filtros de color/prenda/categoría).
   filteredItems: Array<Posts> = [];
   filteredItem: Array<Posts> = [];
 
+  // Controla si se muestra el widget lateral (actualmente sin uso visible en el feed).
   showWidget: boolean = true;
 
+  // Comentarios de cada post, indexados por id_post.
   comentarios: Array<Comments2[]> = [];
+  // Datos de perfil (foto, usuario) del autor de cada post, indexados por id_user.
   perfil: Array<Usuario2> = [];
+  // Cantidad de likes de cada post, indexada por id_post.
   likes: Array<Likes_cant> = [];
   id_com: number;
+  // Texto que el usuario está escribiendo en el input de comentario de cada post, indexado por id_post.
   comentario: { [key: number]: string } = {};
+  // Estado visual de "like" (true/false) por índice del *ngFor.
   toggle: boolean[] = [];
+  // Estado visual de "guardado" (true/false) por índice del *ngFor.
   toggle1: boolean[] = [];
   id_lik: number;
   valores: Likes;
   id_us: number;
 
   showShortDesciption = true;
+  // Id del usuario actualmente logueado, leído de localStorage.
   usuariolog = Number(localStorage.getItem('ids'));
 
   // Variable del usuario logueado (si se usa en el template)
@@ -88,15 +109,23 @@ export class TendenciasComponent implements OnInit {
 
 
   // Propiedades para modales y emojis
+  // Controla si el modal de filtro por color está abierto.
   isModalOpen: boolean = false;
+  // Controla si el modal de filtro por prenda está abierto.
   isModalOpen2: boolean = false;
+  // Controla, por id_post, si el selector de emojis de ese post está abierto.
   showEmojiPicker: { [key: number]: boolean } = {};
 
   // Filtro por categoría (para los chips)
+  // Lista de categorías disponibles (cargada del backend) para los chips de filtro.
   categorias: any[] = [];
+  // Chip de categoría actualmente activo (por defecto "Todo").
   activeChip: string = 'Todo';
 
   // Propiedades para posicionamiento de etiquetas
+  // Dimensiones reales (en píxeles) que quedó la imagen renderizada de cada
+  // post, indexadas por id_post. Se usan para calcular la posición de los
+  // botones de "comprar" sobre las prendas/zonas detectadas.
   imagenDimensiones: { [key: number]: { width: number, height: number } } = {};
 
   constructor(
@@ -109,6 +138,15 @@ export class TendenciasComponent implements OnInit {
     private ngZone?: NgZone
   ) { }
 
+  // Se ejecuta automáticamente al crear el componente.
+  // 1) Carga las categorías (para los chips).
+  // 2) Pide al backend todos los posts de tendencias y los copia también a
+  //    "filteredItems" (sin filtrar todavía).
+  // 3) Por cada post: inicializa su campo de comentario vacío y sus estados
+  //    de like/guardado en false; luego carga en orden los comentarios, el
+  //    conteo de likes y el perfil del autor de cada post.
+  // 4) Al terminar, restaura desde localStorage el estado de like/guardado
+  //    de visitas anteriores.
   ngOnInit(): void {
     this.cargarCategorias();
     this.backend1.obtenerTendencias().subscribe(async x => {
@@ -151,6 +189,8 @@ export class TendenciasComponent implements OnInit {
   }
 
 
+  // Pide al backend la lista de categorías disponibles y la guarda en
+  // "categorias" para renderizar los chips de filtro.
   cargarCategorias() {
         this.backend1.obtenerCategorias().subscribe(
             data => {
@@ -161,6 +201,7 @@ export class TendenciasComponent implements OnInit {
         );
     }
 
+  // Pide al backend los comentarios de un post puntual y los guarda en "comentarios[id_com]".
   async obtenerComentariosAsync(id_com: number) {
     return new Promise<void>(resolve => {
       this.backend1.obtenerComentarios(id_com).subscribe(async z => {
@@ -170,6 +211,7 @@ export class TendenciasComponent implements OnInit {
     });
   }
 
+  // Pide al backend la cantidad de likes de un post puntual y la guarda en "likes[id_com]".
   async countLikeAsync(id_com: number) {
     return new Promise<void>(resolve => {
       this.backend1.countLike(id_com).subscribe(y => {
@@ -179,6 +221,7 @@ export class TendenciasComponent implements OnInit {
     });
   }
 
+  // Pide al backend los datos de perfil (foto, usuario) de un autor puntual y los guarda en "perfil[id_us]".
   async obtenerPerfilAsync(id_us: number) {
     return new Promise<void>(resolve => {
       this.backend1.obtenerUsuario(id_us).subscribe(async a => {
@@ -188,6 +231,12 @@ export class TendenciasComponent implements OnInit {
     });
   }
 
+  // Se ejecuta al hacer click en el botón/ícono de "like" de un post.
+  // Si ya tenía like, lo quita (baja el contador, sin bajar de 0); si no,
+  // lo agrega (sube el contador) y ADEMÁS avisa al backend
+  // (actualizarPreferencias) para registrar que al usuario le gustan las
+  // prendas de ese post, alimentando así el feed "Para ti". Actualiza
+  // localStorage para recordar el estado.
   like(post: number, index: number) {
     var id_new = localStorage.getItem('ids');
     if (id_new) {
@@ -215,6 +264,15 @@ export class TendenciasComponent implements OnInit {
     }
   }
 
+  // Se ejecuta al hacer click en el botón "Publicar" comentario de un post
+  // (o al presionar Enter en el input de comentario).
+  // 1) Valida que el texto no esté vacío.
+  // 2) Filtra palabras inapropiadas en español (bad-words); si detecta una,
+  //    muestra un aviso, limpia el input y cierra el selector de emojis, sin publicar.
+  // 3) Si es válido, lo envía al backend; si tiene éxito, muestra un aviso
+  //    de "Comentario publicado", limpia el input, cierra el selector de
+  //    emojis y recarga solo los comentarios de ese post (sin recargar toda
+  //    la página, a diferencia de los demás feeds). Si falla, muestra un aviso de error.
   comment(post: number) {
     const comentarioTexto = this.comentario[post];
     if (comentarioTexto.trim() === '') {
@@ -269,6 +327,8 @@ export class TendenciasComponent implements OnInit {
     }
   }
 
+  // Se ejecuta al hacer click en el botón/ícono de "guardar" de un post.
+  // Si ya estaba guardado lo quita; si no, lo guarda como favorito.
   save(post: number, index: number) {
     console.log("save");
     const id_new = localStorage.getItem('ids');
@@ -295,10 +355,12 @@ export class TendenciasComponent implements OnInit {
     }
   }
 
+  // Consulta en localStorage si un post ya fue marcado como guardado.
   isSaved(post: number): boolean {
     return localStorage.getItem(`saveState_${post}`) === 'true';
   }
 
+  // Restaura desde localStorage el estado de like/guardado de cada post (de visitas anteriores).
   private inicializarEstados() {
     for (let i = 0; i < this.dataSource.length; i++) {
       const post = this.dataSource[i].id_post;
@@ -314,6 +376,7 @@ export class TendenciasComponent implements OnInit {
     }
   }
 
+  // Guarda en localStorage el estado actual de like/guardado de todos los posts.
   private actualizarEstadoLocalStorage() {
     for (let i = 0; i < this.dataSource.length; i++) {
       const post = this.dataSource[i].id_post;
@@ -323,21 +386,28 @@ export class TendenciasComponent implements OnInit {
   }
 
   // ========== MÉTODOS DE DIÁLOGOS ==========
+  // Se ejecuta al hacer click en "Publicar" de la barra superior; abre el diálogo para crear una publicación.
   openAgregar() {
     const dialogRef = this.dialog.open(AgregarPubUComponent, { restoreFocus: false, id: 'agregar' });
   }
+  // Se ejecuta al hacer click en la herramienta de extracción de color; abre su diálogo.
   open() {
     const dialogRef = this.dialog.open(ImagecolorComponent, { restoreFocus: false, id: 'color' });
   }
+  // Se ejecuta al hacer click en la herramienta de moodboard; abre su diálogo.
   openMood() {
     const dialogRef = this.dialog.open(MoodboardComponent, { restoreFocus: false, id: 'board' });
   }
+  // Se ejecuta al hacer click en la herramienta de look aleatorio; abre su diálogo.
   openRand() {
     const dialogRef = this.dialog.open(RandlookComponent, { restoreFocus: false, id: 'look' });
   }
+  // Se ejecuta al hacer click en la herramienta de armario virtual (try-on); abre su diálogo.
   openTryOn() {
     const dialogRef = this.dialog.open(TryOnComponent, { restoreFocus: false, id: 'tryon' });
   }
+  // Se ejecuta al hacer click en "Editar" sobre un comentario propio; abre
+  // el diálogo de edición pasándole el post, el usuario y el comentario a editar.
   openMod(postid: number, id_comment: number) {
     var id_new = localStorage.getItem('ids');
     if (id_new) {
@@ -346,6 +416,7 @@ export class TendenciasComponent implements OnInit {
     }
   }
 
+  // Se ejecuta al hacer click en "Eliminar" sobre un comentario propio; lo borra en el backend y recarga la página.
   deleteComment(post: number, id_comment: number) {
     const id_new = localStorage.getItem('ids');
     if (id_new) {
@@ -362,6 +433,12 @@ export class TendenciasComponent implements OnInit {
   }
 
   // ========== FILTROS DE COLOR Y PRENDA (USANDO PRENDAS) ==========
+  // Se ejecuta al elegir un color en el modal de filtro por color.
+  // A diferencia de otros feeds, este método usa el array "prendas"
+  // detectado por IA (con getColorName) en lugar de los campos antiguos
+  // vibrant_class/muted_class. Filtra "dataSource" dejando en
+  // "filteredItems" solo los posts que tengan al menos una prenda cuyo
+  // color vibrante coincida con algún tono del color elegido.
   seleccionarPorRango(colorGeneral: string) {
     this.selectedColorTones = this.colorShades[colorGeneral.toLowerCase()];
     if (!this.selectedColorTones || this.selectedColorTones.length === 0) {
@@ -379,6 +456,10 @@ export class TendenciasComponent implements OnInit {
     this.isModalOpen = false;
   }
 
+  // Se ejecuta al elegir un tipo de prenda en el modal de filtro por
+  // prenda. Filtra "dataSource" (usando el array "prendas" de IA, buscando
+  // por coincidencia parcial en la etiqueta) dejando en "filteredItems"
+  // solo los posts que tengan esa prenda.
   seleccionarPorRopa(prenda: string) {
     this.selectedClothes = this.clothes[prenda.toLowerCase()] || [];
     if (!this.selectedClothes || this.selectedClothes.length === 0) {
@@ -395,6 +476,8 @@ export class TendenciasComponent implements OnInit {
     this.isModalOpen2 = false;
   }
 
+  // Se ejecuta al hacer click en "Limpiar filtro"; restaura "filteredItems"
+  // a todos los posts y cierra ambos modales de filtro.
   limpiarFiltro(): void {
     this.filteredItems = [...this.dataSource];
     this.isModalOpen = false;
@@ -402,6 +485,9 @@ export class TendenciasComponent implements OnInit {
   }
 
   // ========== FILTRO POR CATEGORÍA (CHIPS) ==========
+  // Se ejecuta al hacer click en un chip de categoría. Si es "Todo" muestra
+  // todos los posts; si no, filtra "dataSource" dejando solo los posts cuya
+  // categoría coincida con el chip elegido.
   filtrarChip(categoria: string) {
     this.activeChip = categoria;
     if (categoria === 'Todo') {
@@ -414,6 +500,10 @@ export class TendenciasComponent implements OnInit {
   }
 
   // ========== UTILIDADES PARA PRENDAS ==========
+  // Recibe un color RGB detectado por la IA y busca en "colorShades" el
+  // nombre de tono en español más cercano (por distancia euclidiana en el
+  // espacio RGB). Si la distancia mínima es demasiado grande (>100), en vez
+  // del nombre exacto del tono devuelve el nombre de la categoría general de color.
   getColorName(rgb: number[]): string {
     const [r, g, b] = rgb;
     const distance = (c1: number[], c2: number[]): number => {
@@ -450,6 +540,11 @@ export class TendenciasComponent implements OnInit {
     return bestMatch.name;
   }
 
+  // Genera la URL a la que lleva el botón de "comprar" sobre una prenda
+  // detectada. Si la prenda ya trae un link de producto (product_link, caso
+  // de zonas de maquillaje), lo usa directamente; si no, arma una búsqueda
+  // de imágenes de Google combinando la etiqueta de la prenda y su color
+  // más cercano en español.
   getSearchUrl(prenda: any, articulo: any): string {
     if (prenda.zone && prenda.product_link) {
       return prenda.product_link;
@@ -460,6 +555,9 @@ export class TendenciasComponent implements OnInit {
   }
 
 
+  // Devuelve el nombre de clase CSS a aplicar al botón de "comprar" según
+  // el tipo de prenda detectado (top, pantalón, vestido, bolso, zapato,
+  // accesorio o un estilo por defecto), para pintarlo con un color/ícono distinto.
   getButtonClass(label: string): string {
     const lower = label.toLowerCase();
     if (lower.includes('top') || lower.includes('shirt') || lower.includes('blouse') || lower.includes('hoodie') || lower.includes('sweater')) {
@@ -480,6 +578,10 @@ export class TendenciasComponent implements OnInit {
   }
 
   // ========== POSICIONAMIENTO DE ETIQUETAS ==========
+  // Se ejecuta cuando la imagen de un post termina de cargar en el
+  // navegador (evento "load" de la etiqueta <img>). Guarda el ancho/alto
+  // real con el que quedó renderizada esa imagen, necesario para calcular
+  // la posición de los botones de "comprar" sobre las prendas detectadas.
   onImageLoad(event: any, articulo: any) {
     this.imagenDimensiones[articulo.id_post] = {
       width: event.target.offsetWidth,
@@ -487,6 +589,9 @@ export class TendenciasComponent implements OnInit {
     };
   }
 
+  // Calcula la posición vertical (en %) donde debe ubicarse el botón de
+  // "comprar" de una prenda, a partir del bounding box detectado por la IA
+  // (bbox) y el tamaño real de la imagen ya renderizada en pantalla.
   getTopPosition(bbox: number[], articulo: any): string {
     const dims = this.imagenDimensiones[articulo.id_post];
     if (!dims) return '0%';
@@ -494,6 +599,9 @@ export class TendenciasComponent implements OnInit {
     return (topPixel / dims.height * 100) + '%';
   }
 
+  // Calcula la posición horizontal (en %) donde debe ubicarse el botón de
+  // "comprar" de una prenda, a partir del bounding box detectado por la IA
+  // (bbox) y el tamaño real de la imagen ya renderizada en pantalla.
   getLeftPosition(bbox: number[], articulo: any): string {
     const dims = this.imagenDimensiones[articulo.id_post];
     if (!dims) return '0%';
@@ -573,18 +681,27 @@ export class TendenciasComponent implements OnInit {
   }
 
   // ========== MÉTODOS DE MODALES Y EMOJIS ==========
+  // Se ejecuta al hacer click en el botón que abre/cierra el modal de filtro por color.
   toggleModal() { this.isModalOpen = !this.isModalOpen; }
+  // Se ejecuta al hacer click en el botón que abre/cierra el modal de filtro por prenda.
   toggleModal2() { this.isModalOpen2 = !this.isModalOpen2; }
 
+  // Se ejecuta al hacer click en el ícono de emoji dentro del input de
+  // comentario de un post. Alterna la visibilidad del selector de emojis de ese post.
   toggleEmojiPicker(postId: number) {
     this.showEmojiPicker[postId] = !this.showEmojiPicker[postId];
   }
 
+  // Se ejecuta al hacer click en un emoji dentro del selector. Lo agrega al
+  // final del texto del comentario de ese post y cierra el selector.
   insertEmoji(emoji: string, postId: number) {
     this.comentario[postId] = (this.comentario[postId] || '') + emoji;
     this.showEmojiPicker[postId] = false;
   }
 
+  // Se ejecuta al hacer click en "Responder" sobre el nombre de usuario de
+  // un comentario. Precarga el input de comentario con "@usuario " y le da
+  // foco al final del texto, para facilitar responderle a esa persona.
   replyTo(username: string, postId: number) {
     this.comentario[postId] = '@' + username + ' ';
     setTimeout(() => {
@@ -593,6 +710,8 @@ export class TendenciasComponent implements OnInit {
     }, 0);
   }
 
+  // Se ejecuta al hacer click en cualquier parte de la ventana; si el click
+  // fue sobre el fondo del modal de color, lo cierra.
   onWindowClick(event: Event) {
     const modal = document.getElementById('colorModal');
     if (event.target === modal) {
@@ -600,10 +719,13 @@ export class TendenciasComponent implements OnInit {
     }
   }
 
+  // Función auxiliar usada en el HTML para decidir si un archivo es imagen o video (por su extensión).
   isImage(fileName: string): boolean {
     return fileName.match(/\.(jpeg|jpg|gif|png)$/) != null;
   }
 
+  // Función auxiliar usada en el HTML para obtener la clase CSS del
+  // "badge" (etiqueta) de categoría de un post, a partir de su nombre.
   getBadgeClass(categoria: string): string {
     if (!categoria) return 'badge--default';
     const categoriaSlug = categoria.toLowerCase().replace(/ /g, '-');
@@ -611,9 +733,12 @@ export class TendenciasComponent implements OnInit {
   }
 
   // Propiedades para filtros
+  // Tonos de color seleccionados actualmente para filtrar (según el color general elegido).
   selectedColorTones: ColorShade[] = [];
+  // Prendas seleccionadas actualmente para filtrar.
   selectedClothes: Prenda[] = [];
 
+  // Diccionario de tipos de prenda disponibles para filtrar (clave = nombre en inglés usado por la IA).
   clothes: { [key: string]: Prenda[] } = {
     bag: [{ name: 'bag' }],
     belt: [{ name: 'belt' }],
@@ -651,6 +776,9 @@ export class TendenciasComponent implements OnInit {
     watch: [{ name: 'watch' }]
   };
 
+  // Paleta grande de tonos de color en español (nombre + RGB), agrupados
+  // por color general. Se usa en getColorName() y seleccionarPorRango()
+  // para encontrar el tono más cercano al color detectado por la IA.
   colorShades: { [key: string]: ColorShade[] } = {
     amarillo: [
       { name: 'almendra', rgb: [239, 222, 205] },

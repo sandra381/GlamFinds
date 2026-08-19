@@ -1,36 +1,38 @@
-const conn = require('../../config/database');
-const multer = require('multer');
+// Este archivo define todas las rutas (endpoints) y la lógica de controlador de la API de GlamFinds
+const conn = require('../../config/database'); // Conexión a la base de datos MySQL
+const multer = require('multer'); // Middleware para subir archivos (imágenes)
 const path = require('path');
 const axios = require('axios');
-const sharp = require('sharp');
+const sharp = require('sharp'); // Librería para procesar/redimensionar imágenes
 
 const express = require('express');
 const fs = require('fs');
 
 
-const Vibrant = require('node-vibrant');
-const getColors = require('get-image-colors');
+const Vibrant = require('node-vibrant'); // Extrae colores dominantes de una imagen
+const getColors = require('get-image-colors'); // Extrae paleta de colores de una imagen
 
 
-const { generarOutfitIA } = require('../../config/gemini'); 
-const { buscarImagenPexels } = require('../../config/pexels');
+const { generarOutfitIA } = require('../../config/gemini'); // Genera outfits sugeridos con IA (Gemini)
+const { buscarImagenPexels } = require('../../config/pexels'); // Busca fotos de stock para el outfit generado
 
 
-// Configuración de multer
+// Configuración de multer: define dónde y con qué nombre se guardan las imágenes subidas
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
         cb(null, 'C:\\Users\\danie\\OneDrive\\Escritorio\\Proyecto Privado\\GlamFinds\\src\\assets\\img');
     },
     filename: function (req, file, cb) {
         const ext = path.extname(file.originalname);
-        cb(null, Date.now() + ext);
+        cb(null, Date.now() + ext); // Nombre único basado en la fecha/hora actual
     }
 });
 const upload = multer({ storage: storage });
 
 
 
-// Colores predefinidos (igual que antes)
+// Paleta de colores predefinidos: cada tono base tiene variantes con nombre y su valor RGB,
+// usada para identificar el color más parecido de una prenda a partir de un color detectado
 const colorShades = {
     amarillo: [
         { name: 'almendra', rgb: [239, 222, 205] },
@@ -249,6 +251,8 @@ const colorShades = {
 };
 
 // Funciones auxiliares
+
+// Convierte el objeto colorShades (agrupado por tono) en una sola lista plana de colores
 function getAllColors(colorShades) {
     let allColors = [];
     for (const category in colorShades) {
@@ -257,12 +261,14 @@ function getAllColors(colorShades) {
     return allColors;
 }
 
+// Calcula la distancia euclidiana entre dos colores RGB (qué tan parecidos son)
 function colorDistance(c1, c2) {
     const [r1, g1, b1] = c1;
     const [r2, g2, b2] = c2;
     return Math.sqrt((r1 - r2) ** 2 + (g1 - g2) ** 2 + (b1 - b2) ** 2);
 }
 
+// Busca en la lista de colores cuál es el nombre más cercano a un color RGB dado
 function findClosestColor(rgbColor, colorList) {
     let closestColor = colorList[0];
     let minDistance = colorDistance(rgbColor, closestColor.rgb);
@@ -276,11 +282,12 @@ function findClosestColor(rgbColor, colorList) {
     return closestColor.name;
 }
 
+// Agrega a cada post la lista de prendas detectadas (por YOLO) con su color y posición, consultando post_prendas
 function addPrendasToPosts(posts, callback) {
     if (!posts || posts.length === 0) return callback(null, posts);
     const postIds = posts.map(p => p.id_post);
     const placeholders = postIds.map(() => '?').join(',');
-    const queryPrendas = `SELECT * FROM post_prendas WHERE id_post IN (${placeholders})`;
+    const queryPrendas = `SELECT * FROM post_prendas WHERE id_post IN (${placeholders})`; // Trae las prendas detectadas de los posts dados
     conn.query(queryPrendas, postIds, (err, prendasRows) => {
         if (err) return callback(err);
         const prendasPorPost = {};
@@ -308,6 +315,7 @@ function addPrendasToPosts(posts, callback) {
 }
 
 // ========== MAPEO DE CATEGORÍAS ========== (NUEVO)
+// Relaciona cada categoría de prenda (top, bottom, shoes, accessory) con las etiquetas que devuelve el modelo YOLO
 const CATEGORIA_LABELS = {
   top: ['shirt, blouse', 'top, t-shirt, sweatshirt', 'sweater', 'cardigan', 'jacket', 'vest'],
   bottom: ['pants', 'shorts', 'skirt'],
@@ -322,7 +330,7 @@ const router = express.Router();
 
 // ========== RUTAS ==========
 
-// API de noticias
+// Obtiene noticias de moda desde NewsAPI y devuelve título, descripción, link e imagen de cada artículo
 router.get('/api-fashion-trends', async (req, res) => {
     try {
         const response = await axios.get(
@@ -342,7 +350,8 @@ router.get('/api-fashion-trends', async (req, res) => {
     }
 });
 
-// POST GENERALES (versión con segmentación y prendas)
+// Crea un post general: sube la imagen, la analiza con el microservicio de IA (prendas y zonas de maquillaje)
+// y guarda el post junto con las prendas y zonas detectadas en la base de datos
 router.post('/agregarPost', upload.single('imagen'), async (req, res) => {
     const mediaPath = req.file;
     if (!mediaPath) {
@@ -367,6 +376,7 @@ router.post('/agregarPost', upload.single('imagen'), async (req, res) => {
             let skin_ref_rgb = null;
 
             try {
+                // Llama al microservicio de Python que detecta prendas y zonas de maquillaje en la imagen
                 const aiResponse = await axios.post("http://127.0.0.1:8000/analyze-outfit", {
                     image_path: fullPath
                 });
@@ -390,8 +400,9 @@ router.post('/agregarPost', upload.single('imagen'), async (req, res) => {
                 [skin_r, skin_g, skin_b] = skin_ref_rgb;
             }
 
+            // Inserta el post con su imagen, dimensiones y datos de rostro/tono de piel detectados
             const insertQuery = `
-                INSERT INTO posts_generales 
+                INSERT INTO posts_generales
                 (descripcion, imagen, autor, categoria, image_width, image_height,
                  face_detected, skin_ref_r, skin_ref_g, skin_ref_b)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -412,10 +423,11 @@ router.post('/agregarPost', upload.single('imagen'), async (req, res) => {
             const postId = insertResult.insertId;
 
             // ---------- 3. Insertar prendas ----------
+            // Guarda cada prenda detectada (etiqueta, posición y colores) asociada al post recién creado
             for (const g of garments) {
                 const [x1, y1, x2, y2] = g.bbox;
                 const insertPrendaQuery = `
-                    INSERT INTO post_prendas 
+                    INSERT INTO post_prendas
                     (id_post, label, label_id, confidence, bbox_x1, bbox_y1, bbox_x2, bbox_y2,
                      color_vibrant_r, color_vibrant_g, color_vibrant_b,
                      color_muted_r, color_muted_g, color_muted_b,
@@ -442,6 +454,7 @@ router.post('/agregarPost', upload.single('imagen'), async (req, res) => {
             }
 
             // ---------- 4. Insertar zonas de maquillaje ----------
+            // Guarda cada zona de maquillaje detectada (labios, ojos, etc.) con sus colores y producto sugerido
             for (const zone of makeupZones) {
                 // Asegurar que los colores existan
                 const vibrant = zone.colors?.vibrant || [0,0,0];
@@ -495,6 +508,7 @@ router.post('/agregarPost', upload.single('imagen'), async (req, res) => {
         }
     } else if (fileExtension === '.mp4' || fileExtension === '.avi' || fileExtension === '.mov') {
         // (sin cambios para videos, se mantiene igual)
+        // Si es un video, se guarda el post sin analizar prendas ni maquillaje
         const query = `INSERT INTO posts_generales (descripcion, imagen, autor, categoria) VALUES (?, ?, ?, ?)`;
         const values = [descripcion, path_value, autor, categoria];
         conn.query(query, values, (error, filas) => {
@@ -511,10 +525,12 @@ router.post('/agregarPost', upload.single('imagen'), async (req, res) => {
 
 // Obtener posts de categoría 1 (tendencias)
 // Obtener posts con prendas y zonas de maquillaje
+// Trae todos los posts generales (con su autor y categoría) junto con las prendas y el maquillaje detectados en cada uno
 router.get('/obtener', (req, res) => {
 
+    // Trae todos los posts con los datos del usuario autor y de la categoría
     const queryPosts = `
-        SELECT 
+        SELECT
             p.id_post,
             p.descripcion,
             p.imagen,
@@ -550,12 +566,13 @@ router.get('/obtener', (req, res) => {
         // ==========================================
         // OBTENER PRENDAS
         // ==========================================
+        // Trae y formatea las prendas detectadas (posición y colores) de un post específico
         const obtenerPrendas = (id_post) => {
 
             return new Promise((resolve, reject) => {
 
                 const queryPrendas = `
-                    SELECT 
+                    SELECT
                         label,
                         label_id,
                         confidence,
@@ -628,6 +645,7 @@ router.get('/obtener', (req, res) => {
         // ==========================================
         // OBTENER ZONAS DE MAQUILLAJE
         // ==========================================
+        // Trae y formatea las zonas de maquillaje detectadas de un post específico
         const obtenerMaquillaje = (id_post) => {
             return new Promise((resolve, reject) => {
                 const queryMakeup = `
@@ -697,7 +715,7 @@ router.get('/obtener', (req, res) => {
         // ==========================================
         // ARMAR TODOS LOS POSTS
         // ==========================================
-
+        // Combina cada post con sus prendas y zonas de maquillaje antes de responder
         Promise.all(
 
             posts.map(async (post) => {
@@ -761,6 +779,7 @@ router.get('/obtener', (req, res) => {
 });
 
 // Otras rutas de posts por categoría (mantengo las que estaban)
+// Obtiene los posts generales de la categoría "Ropa" (id_categoria = 2)
 router.get('/getRopa', (req, res) => {
     let obtener = 'Select p.id_post,p.descripcion,p.imagen,u.id_user,u.usuario,c.id_categoria,c.name_categoria, p.color_vibrant, p.color_muted, p.color_third , p.vibrant_class, p.muted_class, p.third_class,p.prenda1,p.prenda2,p.prenda3,p.prenda4,p.prenda5,p.prenda6,p.link1,p.link2, p.link3, p.link4, p.link5,p.link6  FROM  posts_generales p, usuarios u , categorias c where p.autor=u.id_user and p.categoria = c.id_categoria and id_categoria = 2 order by p.id_post ASC';
     conn.query(obtener, (error,filas) =>{
@@ -771,6 +790,7 @@ router.get('/getRopa', (req, res) => {
         }
     });
 });
+// Obtiene los posts generales de la categoría "Zapatos" (id_categoria = 5)
 router.get('/getZapatos', (req, res) => {
     let obtener = 'Select p.id_post,p.descripcion,p.imagen,u.id_user,u.usuario,c.id_categoria,c.name_categoria, p.color_vibrant, p.color_muted, p.color_third , p.vibrant_class, p.muted_class, p.third_class,p.prenda1,p.prenda2,p.prenda3,p.prenda4,p.prenda5,p.prenda6,p.link1,p.link2, p.link3, p.link4, p.link5,p.link6 FROM  posts_generales p, usuarios u , categorias c where p.autor=u.id_user and p.categoria = c.id_categoria and id_categoria = 5 order by p.id_post ASC';
     conn.query(obtener, (error,filas) =>{
@@ -781,6 +801,7 @@ router.get('/getZapatos', (req, res) => {
         }
     });
 });
+// Obtiene los posts generales de la categoría "Maquillaje" (id_categoria = 3)
 router.get('/getMaquillaje', (req, res) => {
     let obtener = 'Select p.id_post,p.descripcion,p.imagen,u.id_user,u.usuario,c.id_categoria,c.name_categoria, p.color_vibrant, p.color_muted, p.color_third , p.vibrant_class, p.muted_class, p.third_class,p.prenda1,p.prenda2,p.prenda3,p.prenda4,p.prenda5,p.prenda6,p.link1,p.link2, p.link3, p.link4, p.link5,p.link6 FROM  posts_generales p, usuarios u , categorias c where p.autor=u.id_user and p.categoria = c.id_categoria and id_categoria = 3 order by p.id_post ASC';
     conn.query(obtener, (error,filas) =>{
@@ -791,6 +812,7 @@ router.get('/getMaquillaje', (req, res) => {
         }
     });
 });
+// Obtiene los posts generales de la categoría "Accesorios" (id_categoria = 4)
 router.get('/getAccesorios', (req, res) => {
     let obtener = 'Select p.id_post,p.descripcion,p.imagen,u.id_user,u.usuario,c.id_categoria,c.name_categoria, p.color_vibrant, p.color_muted, p.color_third , p.vibrant_class, p.muted_class, p.third_class,p.prenda1,p.prenda2,p.prenda3,p.prenda4,p.prenda5,p.prenda6,p.link1,p.link2, p.link3, p.link4, p.link5,p.link6 FROM  posts_generales p, usuarios u , categorias c where p.autor=u.id_user and p.categoria = c.id_categoria and id_categoria = 4 order by p.id_post ASC';
     conn.query(obtener, (error,filas) =>{
@@ -803,9 +825,10 @@ router.get('/getAccesorios', (req, res) => {
 });
 
 // Likes, comentarios, saves, etc. (mantengo tu código pero con router)
+// Cuenta cuántos likes tiene un post general
 router.get('/countLike:id', (req, res) => {
     const {id} = req.params;
-    let obtener = 'SELECT count(*) as cantidad from likes_postG l ,posts_generales p where p.id_post = l.post and p.id_post =?';
+    let obtener = 'SELECT count(*) as cantidad from likes_postG l ,posts_generales p where p.id_post = l.post and p.id_post =?'; // Cuenta los likes asociados al post
     conn.query(obtener,[id], (error,filas) =>{
         if(error){
             res.json({status: 0, mensaje: "No hay valores en la BD", datos: []});
@@ -814,8 +837,9 @@ router.get('/countLike:id', (req, res) => {
         }
     });
 });
+// Registra un "me gusta" de un usuario sobre un post general
 router.post('/likes', (req, res) => {
-    let query = `insert into likes_postG(post,navegante) VALUES('${req.body.post}','${req.body.navegante}')`;
+    let query = `insert into likes_postG(post,navegante) VALUES('${req.body.post}','${req.body.navegante}')`; // Inserta el like en la tabla likes_postG
     conn.query(query, (error,filas) =>{
         if(error){
             res.json({status: 0, mensaje: "No hay valores para insertar en la BD", datos: []});
@@ -824,8 +848,9 @@ router.post('/likes', (req, res) => {
         }
     });
 });
+// Guarda ("save") un post general para un usuario
 router.post('/save', (req, res) => {
-    let query = `insert into save_postG(post,navegante) VALUES('${req.body.post}','${req.body.navegante}')`;
+    let query = `insert into save_postG(post,navegante) VALUES('${req.body.post}','${req.body.navegante}')`; // Inserta el guardado en save_postG
     conn.query(query, (error,filas) =>{
         if(error){
             res.json({status: 0, mensaje: "No hay valores para insertar en la BD", datos: []});
@@ -834,9 +859,10 @@ router.post('/save', (req, res) => {
         }
     });
 });
+// Obtiene los comentarios de un post general junto con el nombre del usuario que comentó
 router.get('/getComentarios:id', (req, res) => {
     const {id} = req.params;
-    let obtener = 'SELECT c.post,c.navegante ,u.usuario, c.comments, c.id_comment FROM  posts_generales p, usuarios u , comments_postG c where p.id_post = c.post and c.navegante = u.id_user and p.id_post =?';
+    let obtener = 'SELECT c.post,c.navegante ,u.usuario, c.comments, c.id_comment FROM  posts_generales p, usuarios u , comments_postG c where p.id_post = c.post and c.navegante = u.id_user and p.id_post =?'; // Trae los comentarios del post con el nombre de usuario
     conn.query(obtener,[id], (error,filas) =>{
         if(error){
             res.json({status: 0, mensaje: "No hay valores en la BD", datos: []});
@@ -845,9 +871,11 @@ router.get('/getComentarios:id', (req, res) => {
         }
     });
 });
+// Agrega un comentario a un post general, primero pasándolo por un servicio de moderación de texto
 router.post('/comments', async (req, res) => {
     const { post, navegante, comments } = req.body;
     try {
+        // Verifica con el microservicio de IA si el comentario contiene contenido inapropiado
         const moderationResponse = await axios.post("http://127.0.0.1:8000/moderate", { text: comments });
         const moderation = moderationResponse.data;
         if (moderation.status === "error") {
@@ -856,7 +884,7 @@ router.post('/comments', async (req, res) => {
         if (moderation.status === "bloqueado") {
             return res.json({ status: 0, mensaje: "Comentario inapropiado detectado", datos: [] });
         }
-        let query = `INSERT INTO comments_postG(post, navegante, comments) VALUES(?, ?, ?)`;
+        let query = `INSERT INTO comments_postG(post, navegante, comments) VALUES(?, ?, ?)`; // Inserta el comentario aprobado
         conn.query(query, [post, navegante, comments], (error, filas) => {
             if (error) {
                 return res.json({ status: 0, mensaje: "Error al insertar en la BD", datos: [] });
@@ -868,8 +896,9 @@ router.post('/comments', async (req, res) => {
         res.json({ status: 0, mensaje: "No se pudo conectar con el servicio de moderación", datos: [] });
     }
 });
+// Elimina el like de un usuario sobre un post general
 router.delete('/borrarLikes/:id/:id2', (req, res) => {
-    let consulta = `DELETE FROM likes_postg WHERE post = ${req.params.id} and navegante = ${req.params.id2}`;
+    let consulta = `DELETE FROM likes_postg WHERE post = ${req.params.id} and navegante = ${req.params.id2}`; // Borra el like de ese usuario en ese post
     conn.query(consulta, (err, filas) => {
         if (err) {
             res.json({status: 0, mensaje: "Error en la eliminacion", datos: []});
@@ -878,8 +907,9 @@ router.delete('/borrarLikes/:id/:id2', (req, res) => {
         }
     });
 });
+// Elimina el guardado ("save") de un usuario sobre un post general
 router.delete('/borrarSaves/:id/:id2', (req, res) => {
-    let consulta = `DELETE FROM save_postg WHERE post = ${req.params.id} and navegante = ${req.params.id2}`;
+    let consulta = `DELETE FROM save_postg WHERE post = ${req.params.id} and navegante = ${req.params.id2}`; // Borra el guardado de ese usuario en ese post
     conn.query(consulta, (err, filas) => {
         if (err) {
             res.json({status: 0, mensaje: "Error en la eliminacion", datos: []});
@@ -888,8 +918,9 @@ router.delete('/borrarSaves/:id/:id2', (req, res) => {
         }
     });
 });
+// Modifica un comentario existente de un post general
 router.post('/updateCom/:id3', (req, res) => {
-    let obtener =` update comments_postg set post ='${req.body.post}' ,navegante ='${req.body.navegante}' , comments = '${req.body.comments}' where id_comment = ${req.params.id3}; `;
+    let obtener =` update comments_postg set post ='${req.body.post}' ,navegante ='${req.body.navegante}' , comments = '${req.body.comments}' where id_comment = ${req.params.id3}; `; // Actualiza los datos del comentario indicado
     conn.query(obtener, (error,filas) =>{
         if(error){
             res.json({status: 0, mensaje: "No hay valores en la BD", datos: []});
@@ -898,8 +929,9 @@ router.post('/updateCom/:id3', (req, res) => {
         }
     });
 });
+// Elimina un comentario específico de un post general
 router.delete('/borrarComment/:id/:id2/:id3', (req, res) => {
-    let consulta = `DELETE FROM comments_postg WHERE post = ${req.params.id} and navegante = ${req.params.id2} and id_comment = ${req.params.id3}`;
+    let consulta = `DELETE FROM comments_postg WHERE post = ${req.params.id} and navegante = ${req.params.id2} and id_comment = ${req.params.id3}`; // Borra el comentario indicado
     conn.query(consulta, (err, filas) => {
         if (err) {
             res.json({status: 0, mensaje: "Error en la eliminacion", datos: []});
@@ -908,8 +940,9 @@ router.delete('/borrarComment/:id/:id2/:id3', (req, res) => {
         }
     });
 });
+// Obtiene un comentario específico de un post general
 router.get('/getComment/:id/:id2/:id3', (req, res) => {
-    let obtener = `SELECT id_comment, post,navegante,comments FROM  comments_postG  where post = ${req.params.id} and navegante = ${req.params.id2} and id_comment = ${req.params.id3}`;
+    let obtener = `SELECT id_comment, post,navegante,comments FROM  comments_postG  where post = ${req.params.id} and navegante = ${req.params.id2} and id_comment = ${req.params.id3}`; // Trae el comentario indicado
     conn.query(obtener, (error,filas) =>{
         if(error){
             res.json({status: 0, mensaje: "No hay valores en la BD", datos: []});
@@ -920,6 +953,7 @@ router.get('/getComment/:id/:id2/:id3', (req, res) => {
 });
 
 // Rutas de publicidad, usuario, etc. (similares, adaptadas a router)
+// Obtiene los posts de publicidad de la categoría "Descuentos" (id_categoria = 6)
 router.get('/getDescuentos', (req, res) => {
     let obtener = 'SELECT p.id_post,p.descripcion,p.imagen,u.id_user,u.usuario,c.id_categoria,c.name_categoria,p.link FROM  posts_publicidad p, usuarios u , categorias c where p.autor=u.id_user and p.categoria = c.id_categoria and id_categoria = 6';
     conn.query(obtener, (error,filas) =>{
@@ -930,6 +964,7 @@ router.get('/getDescuentos', (req, res) => {
         }
     });
 });
+// Obtiene los posts de publicidad de la categoría "Dups" (id_categoria = 7)
 router.get('/getDups', (req, res) => {
     let obtener = 'SELECT p.id_post,p.descripcion,p.imagen,u.id_user,u.usuario,c.id_categoria,c.name_categoria,p.link FROM  posts_publicidad p, usuarios u , categorias c where p.autor=u.id_user and p.categoria = c.id_categoria and id_categoria = 7';
     conn.query(obtener, (error,filas) =>{
@@ -940,6 +975,7 @@ router.get('/getDups', (req, res) => {
         }
     });
 });
+// Crea un nuevo post de publicidad (con imagen y link) y lo guarda en la base de datos
 router.post('/agregarPostP', upload.single('imagen'), (req, res) => {
     const imagePath = req.file;
     if (!imagePath) {
@@ -947,7 +983,7 @@ router.post('/agregarPostP', upload.single('imagen'), (req, res) => {
     }
     const path_value = imagePath.filename;
     const { descripcion, autor,link, categoria } = req.body;
-    const query = 'INSERT INTO posts_publicidad(descripcion, imagen, autor,link,categoria) VALUES (?, ?, ?, ?,?)';
+    const query = 'INSERT INTO posts_publicidad(descripcion, imagen, autor,link,categoria) VALUES (?, ?, ?, ?,?)'; // Inserta el post de publicidad
     const values = [descripcion, path_value, autor,link, categoria];
     conn.query(query, values, (error, filas) => {
         if (error) {
@@ -958,8 +994,9 @@ router.post('/agregarPostP', upload.single('imagen'), (req, res) => {
         }
     });
 });
+// Cuenta cuántos likes tiene un post de publicidad
 router.get('/countLikeP:id', (req, res) => {
-    let obtener = `SELECT count(*) as cantidads from likes_postp l , posts_publicidad p where p.id_post = l.post and p.id_post = ${req.params.id}`;
+    let obtener = `SELECT count(*) as cantidads from likes_postp l , posts_publicidad p where p.id_post = l.post and p.id_post = ${req.params.id}`; // Cuenta los likes asociados al post
     conn.query(obtener, (error,filas) =>{
         if(error){
             res.json({status: 0, mensaje: "No hay valores en la BD", datos: []});
@@ -968,9 +1005,10 @@ router.get('/countLikeP:id', (req, res) => {
         }
     });
 });
+// Obtiene los comentarios de un post de publicidad junto con el nombre del usuario que comentó
 router.get('/getCommentsP:id', (req, res) => {
     const {id} = req.params;
-    let obtener = 'SELECT c.post,c.navegante ,u.usuario, c.comments , c.id_comment FROM  posts_publicidad p, usuarios u , comments_postP c where p.id_post = c.post and c.navegante = u.id_user and p.id_post =?';
+    let obtener = 'SELECT c.post,c.navegante ,u.usuario, c.comments , c.id_comment FROM  posts_publicidad p, usuarios u , comments_postP c where p.id_post = c.post and c.navegante = u.id_user and p.id_post =?'; // Trae los comentarios del post con el nombre de usuario
     conn.query(obtener,[id], (error,filas) =>{
         if(error){
             res.json({status: 0, mensaje: "No hay valores en la BD", datos: []});
@@ -979,8 +1017,9 @@ router.get('/getCommentsP:id', (req, res) => {
         }
     });
 });
+// Agrega un comentario a un post de publicidad
 router.post('/commentsP', (req, res) => {
-    let query = `insert into comments_postp(post,navegante,comments) VALUES('${req.body.post}','${req.body.navegante}','${req.body.comments}')`;
+    let query = `insert into comments_postp(post,navegante,comments) VALUES('${req.body.post}','${req.body.navegante}','${req.body.comments}')`; // Inserta el comentario
     conn.query(query, (error,filas) =>{
         if(error){
             res.json({status: 0, mensaje: "No hay valores para insertar en la BD", datos: []});
@@ -989,8 +1028,9 @@ router.post('/commentsP', (req, res) => {
         }
     });
 });
+// Registra un "me gusta" de un usuario sobre un post de publicidad
 router.post('/likesP', (req, res) => {
-    let query = `insert into likes_postp(post,navegante) VALUES('${req.body.post}','${req.body.navegante}')`;
+    let query = `insert into likes_postp(post,navegante) VALUES('${req.body.post}','${req.body.navegante}')`; // Inserta el like
     conn.query(query, (error,filas) =>{
         if(error){
             res.json({status: 0, mensaje: "No hay valores para insertar en la BD", datos: []});
@@ -999,8 +1039,9 @@ router.post('/likesP', (req, res) => {
         }
     });
 });
+// Guarda ("save") un post de publicidad para un usuario
 router.post('/saveP', (req, res) => {
-    let query = `insert into save_postp(post,navegante) VALUES('${req.body.post}','${req.body.navegante}')`;
+    let query = `insert into save_postp(post,navegante) VALUES('${req.body.post}','${req.body.navegante}')`; // Inserta el guardado
     conn.query(query, (error,filas) =>{
         if(error){
             res.json({status: 0, mensaje: "No hay valores para insertar en la BD", datos: []});
@@ -1009,8 +1050,9 @@ router.post('/saveP', (req, res) => {
         }
     });
 });
+// Elimina el like de un usuario sobre un post de publicidad
 router.delete('/borrarLikesP/:id/:id2', (req, res) => {
-    let consulta = `DELETE FROM likes_postp WHERE post = ${req.params.id} and navegante = ${req.params.id2}`;
+    let consulta = `DELETE FROM likes_postp WHERE post = ${req.params.id} and navegante = ${req.params.id2}`; // Borra el like de ese usuario en ese post
     conn.query(consulta, (err, filas) => {
         if (err) {
             res.json({status: 0, mensaje: "Error en la eliminacion", datos: []});
@@ -1019,8 +1061,9 @@ router.delete('/borrarLikesP/:id/:id2', (req, res) => {
         }
     });
 });
+// Elimina el guardado ("save") de un usuario sobre un post de publicidad
 router.delete('/borrarSavesP/:id/:id2', (req, res) => {
-    let consulta = `DELETE FROM save_postp WHERE post = ${req.params.id} and navegante = ${req.params.id2}`;
+    let consulta = `DELETE FROM save_postp WHERE post = ${req.params.id} and navegante = ${req.params.id2}`; // Borra el guardado de ese usuario en ese post
     conn.query(consulta, (err, filas) => {
         if (err) {
             res.json({status: 0, mensaje: "Error en la eliminacion", datos: []});
@@ -1029,8 +1072,9 @@ router.delete('/borrarSavesP/:id/:id2', (req, res) => {
         }
     });
 });
+// Modifica un comentario existente de un post de publicidad
 router.post('/updateComP/:id3', (req, res) => {
-    let obtener =` update comments_postp set post ='${req.body.post}' ,navegante ='${req.body.navegante}' , comments = '${req.body.comments}' where id_comment = ${req.params.id3}; `;
+    let obtener =` update comments_postp set post ='${req.body.post}' ,navegante ='${req.body.navegante}' , comments = '${req.body.comments}' where id_comment = ${req.params.id3}; `; // Actualiza los datos del comentario indicado
     conn.query(obtener, (error,filas) =>{
         if(error){
             res.json({status: 0, mensaje: "No hay valores en la BD", datos: []});
@@ -1039,8 +1083,9 @@ router.post('/updateComP/:id3', (req, res) => {
         }
     });
 });
+// Elimina un comentario específico de un post de publicidad
 router.delete('/borrarCommentP/:id/:id2/:id3', (req, res) => {
-    let consulta = `DELETE FROM comments_postp WHERE post = ${req.params.id} and navegante = ${req.params.id2} and id_comment = ${req.params.id3}`;
+    let consulta = `DELETE FROM comments_postp WHERE post = ${req.params.id} and navegante = ${req.params.id2} and id_comment = ${req.params.id3}`; // Borra el comentario indicado
     conn.query(consulta, (err, filas) => {
         if (err) {
             res.json({status: 0, mensaje: "Error en la eliminacion", datos: []});
@@ -1049,8 +1094,9 @@ router.delete('/borrarCommentP/:id/:id2/:id3', (req, res) => {
         }
     });
 });
+// Obtiene un comentario específico de un post de publicidad
 router.get('/getCommentP/:id/:id2/:id3', (req, res) => {
-    let obtener = `SELECT id_comment, post,navegante,comments FROM  comments_postp  where post = ${req.params.id} and navegante = ${req.params.id2} and id_comment = ${req.params.id3}`;
+    let obtener = `SELECT id_comment, post,navegante,comments FROM  comments_postp  where post = ${req.params.id} and navegante = ${req.params.id2} and id_comment = ${req.params.id3}`; // Trae el comentario indicado
     conn.query(obtener, (error,filas) =>{
         if(error){
             res.json({status: 0, mensaje: "No hay valores en la BD", datos: []});
@@ -1061,9 +1107,10 @@ router.get('/getCommentP/:id/:id2/:id3', (req, res) => {
 });
 
 // Usuario
+// Obtiene los datos de un usuario por su id
 router.get('/user:id', (req, res) => {
     const {id} = req.params;
-    let query = 'SELECT * FROM usuarios where id_user = ?';
+    let query = 'SELECT * FROM usuarios where id_user = ?'; // Trae el usuario con ese id
     conn.query(query,[id], (error,filas) =>{
         if(error){
             res.json({status: 0, mensaje: "No hay valores en la BD", datos: []});
@@ -1072,6 +1119,7 @@ router.get('/user:id', (req, res) => {
         }
     });
 });
+// Registra un nuevo usuario (con foto de perfil) en la base de datos
 router.post('/login', upload.single('imagen'), (req, res) => {
     const imagePath = req.file;
     if (!imagePath) {
@@ -1079,7 +1127,7 @@ router.post('/login', upload.single('imagen'), (req, res) => {
     }
     const path_value = imagePath.filename;
     const { usuario, nombre, apellido, edad, sexo, correo, contrase ,descripcion} = req.body;
-    const query = `INSERT INTO usuarios (usuario, nombre, apellido, edad, sexo, correo, contrase, imagen,descripcion) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+    const query = `INSERT INTO usuarios (usuario, nombre, apellido, edad, sexo, correo, contrase, imagen,descripcion) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)`; // Inserta el nuevo usuario
     const values = [usuario, nombre, apellido, edad, sexo, correo, contrase, path_value, descripcion];
     conn.query(query, values, (error, filas) => {
         if (error) {
@@ -1089,8 +1137,9 @@ router.post('/login', upload.single('imagen'), (req, res) => {
         }
     });
 });
+// Verifica las credenciales de login (usuario y contraseña)
 router.post("/verificar", (req, res) => {
-    let consulta = `SELECT id_user,usuario,contrase FROM usuarios WHERE usuario = ? AND contrase = ?`;
+    let consulta = `SELECT id_user,usuario,contrase FROM usuarios WHERE usuario = ? AND contrase = ?`; // Busca un usuario que coincida con usuario y contraseña
     conn.query(consulta, [req.body.usuario, req.body.contrase], (error,filas) =>{
         if(error){
             res.status(500).json({status:0, mensaje: "Err Base de datos"});
@@ -1103,7 +1152,9 @@ router.post("/verificar", (req, res) => {
         }
     });
 });
+// Obtiene todos los posts (generales y de publicidad) que un usuario guardó
 router.get('/getsave:id', (req, res) => {
+    // Une los posts generales guardados con los posts de publicidad guardados por el mismo usuario
     let obtener =` SELECT p.id_post, p.descripcion,u.usuario,u.imagen, p.imagen,c.name_categoria,s.navegante FROM save_postG s
                     INNER JOIN posts_generales p ON p.id_post = s.post
                     INNER JOIN usuarios u ON u.id_user = p.autor
@@ -1123,8 +1174,9 @@ router.get('/getsave:id', (req, res) => {
         }
     });
 });
+// Obtiene el usuario, su imagen y su descripción de perfil
 router.get('/getdescripcion:id', (req, res) => {
-    let obtener =` select usuario, imagen, descripcion  from  usuarios inner join descripcion on id_user = usuarios where id_user =  ${req.params.id} `;
+    let obtener =` select usuario, imagen, descripcion  from  usuarios inner join descripcion on id_user = usuarios where id_user =  ${req.params.id} `; // Trae usuario, imagen y descripción
     conn.query(obtener, (error,filas) =>{
         if(error){
             res.json({status: 0, mensaje: "No hay valores en la BD", datos: []});
@@ -1133,9 +1185,10 @@ router.get('/getdescripcion:id', (req, res) => {
         }
     });
 });
+// Obtiene todos los posts generales publicados por un usuario (para su perfil)
 router.get('/PostPerfil:id', (req, res) => {
     const {id} = req.params;
-    let obtener =`SELECT p.id_post,p.descripcion,p.imagen,u.id_user,u.usuario,c.id_categoria,c.name_categoria FROM  posts_generales p, usuarios u , categorias c where p.autor=u.id_user and p.categoria = c.id_categoria and  u.id_user=?` ;
+    let obtener =`SELECT p.id_post,p.descripcion,p.imagen,u.id_user,u.usuario,c.id_categoria,c.name_categoria FROM  posts_generales p, usuarios u , categorias c where p.autor=u.id_user and p.categoria = c.id_categoria and  u.id_user=?` ; // Trae los posts de ese usuario
     conn.query(obtener,[id], (error,filas) =>{
         if(error){
             res.json({status: 0, mensaje: "No hay valores en la BD", datos: []});
@@ -1144,8 +1197,9 @@ router.get('/PostPerfil:id', (req, res) => {
         }
     });
 });
+// Obtiene la descripción de perfil asociada a un usuario
 router.get('/PostDes:id', (req, res) => {
-    let obtener =` SELECT  u.usuarios,d.descripcion FROM descripcion d , usuarios u where  d.usuarios = u.id_user and d.usuarios  = ${req.params.id} ` ;
+    let obtener =` SELECT  u.usuarios,d.descripcion FROM descripcion d , usuarios u where  d.usuarios = u.id_user and d.usuarios  = ${req.params.id} ` ; // Trae la descripción de ese usuario
     conn.query(obtener, (error,filas) =>{
         if(error){
             res.json({status: 0, mensaje: "No hay valores en la BD", datos: []});
@@ -1154,15 +1208,16 @@ router.get('/PostDes:id', (req, res) => {
         }
     });
 });
+// Actualiza el perfil de un usuario (nombre de usuario, descripción y opcionalmente la imagen)
 router.post('/update2/:id', upload.single('imagen'), (req, res) => {
     const { id } = req.params;
     const { usuario, descripcion } = req.body;
-    let path_value = req.body.imagen; 
+    let path_value = req.body.imagen;
     if (req.file) {
         const imagePath = req.file;
-        path_value = imagePath.filename; 
+        path_value = imagePath.filename; // Si se subió una nueva imagen, se usa su nombre de archivo
     }
-    const query = `UPDATE usuarios SET usuario = ?, descripcion = ?, imagen = ? WHERE id_user = ?`;
+    const query = `UPDATE usuarios SET usuario = ?, descripcion = ?, imagen = ? WHERE id_user = ?`; // Actualiza los datos del perfil
     conn.query(query, [usuario, descripcion, path_value, id], (error, filas) => {
         if (error) {
             res.json({ status: 0, mensaje: 'Error al actualizar el perfil', datos: [] });
@@ -1171,8 +1226,9 @@ router.post('/update2/:id', upload.single('imagen'), (req, res) => {
         }
     });
 });
+// Elimina un post general por su id
 router.delete('/borrarPosts/:id', (req, res) => {
-    let consulta = `DELETE FROM posts_generales WHERE id_post = ${req.params.id}`;
+    let consulta = `DELETE FROM posts_generales WHERE id_post = ${req.params.id}`; // Borra el post indicado
     conn.query(consulta, (err, filas) => {
         if (err) {
             res.json({status: 0, mensaje: "Error en la eliminacion", datos: []});
@@ -1181,8 +1237,9 @@ router.delete('/borrarPosts/:id', (req, res) => {
         }
     });
 });
+// Obtiene los datos de un post general para precargarlos en el formulario de edición
 router.get('/modificar1/:id', (req, res) => {
-    let obtener =` select descripcion, imagen,autor,categoria  from posts_generales where id_post = ${req.params.id} ` ;
+    let obtener =` select descripcion, imagen,autor,categoria  from posts_generales where id_post = ${req.params.id} ` ; // Trae los datos actuales del post
     conn.query(obtener, (error,filas) =>{
         if(error){
             res.json({status: 0, mensaje: "No hay valores en la BD", datos: []});
@@ -1191,8 +1248,9 @@ router.get('/modificar1/:id', (req, res) => {
         }
     });
 });
+// Actualiza la descripción, imagen y categoría de un post general
 router.post('/update1/:id', (req, res) => {
-    let obtener =` update posts_generales set descripcion = '${req.body.descripcion}', imagen  = '${req.body.imagen}' , categoria = '${req.body.categoria}' where id_post = ${req.params.id}; ` ;
+    let obtener =` update posts_generales set descripcion = '${req.body.descripcion}', imagen  = '${req.body.imagen}' , categoria = '${req.body.categoria}' where id_post = ${req.params.id}; ` ; // Actualiza los datos del post
     conn.query(obtener, (error,filas) =>{
         if(error){
             res.json({status: 0, mensaje: "No hay valores en la BD", datos: []});
@@ -1201,19 +1259,21 @@ router.post('/update1/:id', (req, res) => {
         }
     });
 });
+// Extrae la paleta de colores dominantes de una imagen dada su URL
 router.post('/extract-colors', async (req, res) => {
-    const imageUrl = req.body.imageUrl; 
+    const imageUrl = req.body.imageUrl;
     try {
-        const palette = await Vibrant.from(imageUrl).getPalette(); 
-        res.json(palette); 
+        const palette = await Vibrant.from(imageUrl).getPalette(); // Analiza la imagen y obtiene sus colores predominantes
+        res.json(palette);
     } catch (error) {
         console.error('Error al obtener los colores:', error);
         res.status(500).json({ error: 'Error al obtener los colores' });
     }
 });
+// Filtra posts generales por color (coincidencia con el color vibrante o el color apagado)
 router.get('/filtrar', (req, res) => {
     const colorSeleccionado = req.query.color;
-    const query = 'SELECT * FROM post_generales WHERE color_vibrant = ? OR color_muted = ?';
+    const query = 'SELECT * FROM post_generales WHERE color_vibrant = ? OR color_muted = ?'; // Busca posts con ese color
     conn.query(query, [colorSeleccionado, colorSeleccionado], (err, results) => {
         if (err) throw err;
         res.json(results); 
@@ -1221,13 +1281,15 @@ router.get('/filtrar', (req, res) => {
 });
 
 // Rutas de looks aleatorios
+// Trae una fila aleatoria de la tabla indicada (usado para armar un look al azar)
 function obtenerPrendaAleatoria(tabla, callback) {
-    const query = `SELECT * FROM ${tabla} ORDER BY RAND() LIMIT 1`;
+    const query = `SELECT * FROM ${tabla} ORDER BY RAND() LIMIT 1`; // Selecciona una fila al azar
     conn.query(query, (err, result) => {
         if (err) throw err;
         callback(result[0]);
     });
 }
+// Genera un look aleatorio femenino combinando una prenda al azar de cada categoría (top, pantalón, accesorio, zapato, chaqueta)
 router.get('/generar-look', (req, res) => {
     let look = {};
     obtenerPrendaAleatoria('tops', (top) => {
@@ -1247,13 +1309,15 @@ router.get('/generar-look', (req, res) => {
         });
     });
 });
+// Igual que obtenerPrendaAleatoria pero para las tablas de ropa masculina (sufijo H)
 function obtenerPrendaAleatoriaM(tabla, callback) {
-    const query = `SELECT * FROM ${tabla} ORDER BY RAND() LIMIT 1`;
+    const query = `SELECT * FROM ${tabla} ORDER BY RAND() LIMIT 1`; // Selecciona una fila al azar
     conn.query(query, (err, result) => {
         if (err) throw err;
         callback(result[0]);
     });
 }
+// Genera un look aleatorio masculino combinando una prenda al azar de cada categoría
 router.get('/generar-lookM', (req, res) => {
     let looks = {};
     obtenerPrendaAleatoriaM('topsH', (topsH) => {
@@ -1273,8 +1337,9 @@ router.get('/generar-lookM', (req, res) => {
         });
     });
 });
+// Obtiene las imágenes de todos los posts generales
 router.get('/obtenerprenda', (req, res) => {
-    let obtener = 'SELECT imagen FROM  posts_generales';
+    let obtener = 'SELECT imagen FROM  posts_generales'; // Trae solo la columna imagen de cada post
     conn.query(obtener, (error,filas) =>{
         if(error){
             res.json({status: 0, mensaje: "No hay valores en la BD", datos: []});
@@ -1283,8 +1348,9 @@ router.get('/obtenerprenda', (req, res) => {
         }
     });
 });
+// Obtiene las URLs de imagen de todas las prendas registradas
 router.get('/prendas', (req, res) => {
-    let obtener =  'SELECT url_imagen FROM  prendas';
+    let obtener =  'SELECT url_imagen FROM  prendas'; // Trae solo la columna url_imagen de cada prenda
     conn.query(obtener, (error,filas) =>{
         if(error){
             res.json({status: 0, mensaje: "No hay valores en la BD", datos: []});
@@ -1295,9 +1361,10 @@ router.get('/prendas', (req, res) => {
 });
 
 // Artículos
+// Crea un nuevo artículo (título, contenido, autor y categoría) en la base de datos
 router.post('/agregarART', upload.single('imagen'), async (req, res) => {
     const {titulo,contenido, autor, categoria} = req.body;
-    const query = `INSERT INTO posts_articulos (titulo,contenido,imagen,autor,categoria) VALUES (?,?,?,?,?)`;
+    const query = `INSERT INTO posts_articulos (titulo,contenido,imagen,autor,categoria) VALUES (?,?,?,?,?)`; // Inserta el nuevo artículo
     const values = [titulo,contenido,"", autor, categoria];
     conn.query(query, values, (error, filas) => {
         if (error) {
@@ -1308,8 +1375,9 @@ router.post('/agregarART', upload.single('imagen'), async (req, res) => {
         }
     });
 });
+// Obtiene todos los artículos junto con su autor y categoría
 router.get('/obtenerART', (req, res) => {
-    let obtener = 'SELECT p.id_post,p.titulo,p.contenido,p.imagen,u.id_user,u.usuario,c.id_categoria,c.name_categoria FROM  posts_articulos p, usuarios u , categorias c where p.autor=u.id_user and p.categoria = c.id_categoria order by p.id_post ASC';
+    let obtener = 'SELECT p.id_post,p.titulo,p.contenido,p.imagen,u.id_user,u.usuario,c.id_categoria,c.name_categoria FROM  posts_articulos p, usuarios u , categorias c where p.autor=u.id_user and p.categoria = c.id_categoria order by p.id_post ASC'; // Trae todos los artículos ordenados
     conn.query(obtener, (error,filas) =>{
         if(error){
             res.json({status: 0, mensaje: "No hay valores en la BD", datos: []});
@@ -1318,9 +1386,10 @@ router.get('/obtenerART', (req, res) => {
         }
     });
 });
+// Obtiene los comentarios de un artículo junto con el nombre del usuario que comentó
 router.get('/getComentariosART/:id', (req, res) => {
     const {id} = req.params;
-    let obtener = 'SELECT c.navegante ,u.usuario, c.comments, c.id_comment FROM  posts_articulos p, usuarios u , comments_articulos c where p.id_post = c.post and c.navegante = u.id_user and p.id_post = ?';
+    let obtener = 'SELECT c.navegante ,u.usuario, c.comments, c.id_comment FROM  posts_articulos p, usuarios u , comments_articulos c where p.id_post = c.post and c.navegante = u.id_user and p.id_post = ?'; // Trae los comentarios del artículo
     conn.query(obtener,[id], (error,filas) =>{
         if(error){
             res.json({status: 0, mensaje: "No hay valores en la BD", datos: []});
@@ -1329,9 +1398,10 @@ router.get('/getComentariosART/:id', (req, res) => {
         }
     });
 });
+// Cuenta cuántos likes tiene un artículo
 router.get('/countLikeART/:id', (req, res) => {
     const {id} = req.params;
-    let obtener = 'SELECT count(*) as cantidad from likes_articulos l ,posts_articulos p where p.id_post = l.post and p.id_post =?';
+    let obtener = 'SELECT count(*) as cantidad from likes_articulos l ,posts_articulos p where p.id_post = l.post and p.id_post =?'; // Cuenta los likes asociados al artículo
     conn.query(obtener,[id], (error,filas) =>{
         if(error){
             res.json({status: 0, mensaje: "No hay valores en la BD", datos: []});
@@ -1340,8 +1410,9 @@ router.get('/countLikeART/:id', (req, res) => {
         }
     });
 });
+// Registra un "me gusta" de un usuario sobre un artículo
 router.post('/likesART', (req, res) => {
-    let query = `insert into likes_articulos(post,navegante) VALUES('${req.body.post}','${req.body.navegante}')`;
+    let query = `insert into likes_articulos(post,navegante) VALUES('${req.body.post}','${req.body.navegante}')`; // Inserta el like
     conn.query(query, (error,filas) =>{
         if(error){
             res.json({status: 0, mensaje: "No hay valores para insertar en la BD", datos: []});
@@ -1350,8 +1421,9 @@ router.post('/likesART', (req, res) => {
         }
     });
 });
+// Guarda ("save") un artículo para un usuario
 router.post('/saveART', (req, res) => {
-    let query = `insert into save_articulos(post,navegante) VALUES('${req.body.post}','${req.body.navegante}')`;
+    let query = `insert into save_articulos(post,navegante) VALUES('${req.body.post}','${req.body.navegante}')`; // Inserta el guardado
     conn.query(query, (error,filas) =>{
         if(error){
             res.json({status: 0, mensaje: "No hay valores para insertar en la BD", datos: []});
@@ -1360,12 +1432,13 @@ router.post('/saveART', (req, res) => {
         }
     });
 });
+// Agrega un comentario a un artículo, filtrando primero groserías/lenguaje inapropiado
 router.post('/commentsART', (req, res) => {
     const { post, navegante} = req.body;
     if (filter.isProfane(req.body.comments)) {
         return res.json({status: 0, mensaje: "Comentario inapropiado detectado.", datos: []});
     }else{
-        let query = `INSERT INTO comments_articulos(post, navegante, comments) VALUES(?, ?, ?)`;
+        let query = `INSERT INTO comments_articulos(post, navegante, comments) VALUES(?, ?, ?)`; // Inserta el comentario aprobado
         conn.query(query, [post, navegante, req.body.comments], (error,filas) =>{
             if(error){
                 res.json({status: 0, mensaje: "No hay valores para insertar en la BD", datos: []});
@@ -1375,8 +1448,9 @@ router.post('/commentsART', (req, res) => {
         });
     }   
 });
+// Elimina el like de un usuario sobre un artículo
 router.delete('/borrarLikesART/:id/:id2', (req, res) => {
-    let consulta = `DELETE FROM likes_articulos WHERE post = ${req.params.id} and navegante = ${req.params.id2}`;
+    let consulta = `DELETE FROM likes_articulos WHERE post = ${req.params.id} and navegante = ${req.params.id2}`; // Borra el like de ese usuario en ese artículo
     conn.query(consulta, (err, filas) => {
         if (err) {
             res.json({status: 0, mensaje: "Error en la eliminacion", datos: []});
@@ -1385,8 +1459,9 @@ router.delete('/borrarLikesART/:id/:id2', (req, res) => {
         }
     });
 });
+// Elimina el guardado ("save") de un usuario sobre un artículo
 router.delete('/borrarSavesART/:id/:id2', (req, res) => {
-    let consulta = `DELETE FROM save_articulos WHERE post = ${req.params.id} and navegante = ${req.params.id2}`;
+    let consulta = `DELETE FROM save_articulos WHERE post = ${req.params.id} and navegante = ${req.params.id2}`; // Borra el guardado de ese usuario en ese artículo
     conn.query(consulta, (err, filas) => {
         if (err) {
             res.json({status: 0, mensaje: "Error en la eliminacion", datos: []});
@@ -1395,8 +1470,9 @@ router.delete('/borrarSavesART/:id/:id2', (req, res) => {
         }
     });
 });
+// Modifica un comentario existente de un artículo
 router.post('/updateComART/:id3', (req, res) => {
-    let obtener =` update comments_articulos set post ='${req.body.post}' ,navegante ='${req.body.navegante}' , comments = '${req.body.comments}' where id_comment = ${req.params.id3}; ` ;
+    let obtener =` update comments_articulos set post ='${req.body.post}' ,navegante ='${req.body.navegante}' , comments = '${req.body.comments}' where id_comment = ${req.params.id3}; ` ; // Actualiza los datos del comentario indicado
     conn.query(obtener, (error,filas) =>{
         if(error){
             res.json({status: 0, mensaje: "No hay valores en la BD", datos: []});
@@ -1405,8 +1481,9 @@ router.post('/updateComART/:id3', (req, res) => {
         }
     });
 });
+// Elimina un comentario específico de un artículo
 router.delete('/borrarCommentART/:id/:id2/:id3', (req, res) => {
-    let consulta = `DELETE FROM comments_articulos WHERE post = ${req.params.id} and navegante = ${req.params.id2} and id_comment = ${req.params.id3}`;
+    let consulta = `DELETE FROM comments_articulos WHERE post = ${req.params.id} and navegante = ${req.params.id2} and id_comment = ${req.params.id3}`; // Borra el comentario indicado
     conn.query(consulta, (err, filas) => {
         if (err) {
             res.json({status: 0, mensaje: "Error en la eliminacion", datos: []});
@@ -1415,8 +1492,9 @@ router.delete('/borrarCommentART/:id/:id2/:id3', (req, res) => {
         }
     });
 });
+// Obtiene un comentario específico de un artículo
 router.get('/getCommentART/:id/:id2/:id3', (req, res) => {
-    let obtener = `SELECT id_comment, post,navegante,comments FROM  comments_articulos  where post = ${req.params.id} and navegante = ${req.params.id2} and id_comment = ${req.params.id3}`;
+    let obtener = `SELECT id_comment, post,navegante,comments FROM  comments_articulos  where post = ${req.params.id} and navegante = ${req.params.id2} and id_comment = ${req.params.id3}`; // Trae el comentario indicado
     conn.query(obtener, (error,filas) =>{
         if(error){
             res.json({status: 0, mensaje: "No hay valores en la BD", datos: []});
@@ -1425,7 +1503,9 @@ router.get('/getCommentART/:id/:id2/:id3', (req, res) => {
         }
     });
 });
+// Obtiene todos los artículos que un usuario guardó
 router.get('/getsaveA/:id', (req, res) => {
+    // Trae los artículos guardados por ese usuario junto con autor y categoría
     let obtener =`SELECT p.id_post,p.titulo, p.contenido, u.usuario,p.imagen, c.name_categoria, s.navegante AS usuario_logueado
                     FROM save_articulos s
                     INNER JOIN posts_articulos p ON p.id_post = s.post
@@ -1444,9 +1524,10 @@ router.get('/getsaveA/:id', (req, res) => {
 //----------------------------FOLLOWS PARA EL PERFIL DE LA PERSONA----------------------------
 
 // Nuevas rutas de follows y feeds
+// Registra que un usuario (follower_id) empieza a seguir a otro (following_id)
 router.post("/follow", (req, res) => {
     const { follower_id, following_id } = req.body;
-    const sql = `INSERT INTO followers (follower_id, followed_id) VALUES (?, ?)`;
+    const sql = `INSERT INTO followers (follower_id, followed_id) VALUES (?, ?)`; // Inserta la relación de seguimiento
     conn.query(sql, [follower_id, following_id], (err, result) => {
         if (err) {
             console.error(err);
@@ -1455,9 +1536,10 @@ router.post("/follow", (req, res) => {
         res.json({ message: "User followed successfully" });
     });
 });
+// Elimina la relación de seguimiento entre dos usuarios
 router.post("/unfollow", (req, res) => {
     const { follower_id, following_id } = req.body;
-    const sql = `DELETE FROM followers WHERE follower_id = ? AND followed_id = ?`;
+    const sql = `DELETE FROM followers WHERE follower_id = ? AND followed_id = ?`; // Borra el seguimiento
     conn.query(sql, [follower_id, following_id], (err, result) => {
         if (err) {
             console.error(err);
@@ -1466,17 +1548,19 @@ router.post("/unfollow", (req, res) => {
         res.json({ message: "User unfollowed" });
     });
 });
+// Obtiene la lista de usuarios que siguen a un usuario dado
 router.get("/followers/:id", (req, res) => {
     const userId = req.params.id;
-    const sql = `SELECT u.id_user, u.usuario, u.nombre FROM followers f JOIN usuarios u ON f.follower_id = u.id_user WHERE f.followed_id = ?`;
+    const sql = `SELECT u.id_user, u.usuario, u.nombre FROM followers f JOIN usuarios u ON f.follower_id = u.id_user WHERE f.followed_id = ?`; // Trae los seguidores de ese usuario
     conn.query(sql, [userId], (err, result) => {
         if (err) return res.status(500).json(err);
         res.json(result);
     });
 });
+// Obtiene la lista de usuarios a los que sigue un usuario dado
 router.get("/following/:id", (req, res) => {
     const userId = req.params.id;
-    const sql = `SELECT u.id_user, u.usuario, u.nombre FROM followers f JOIN usuarios u ON f.followed_id = u.id_user WHERE f.follower_id = ?`;
+    const sql = `SELECT u.id_user, u.usuario, u.nombre FROM followers f JOIN usuarios u ON f.followed_id = u.id_user WHERE f.follower_id = ?`; // Trae a quienes sigue ese usuario
     conn.query(sql, [userId], (err, result) => {
         if (err) return res.status(500).json(err);
         res.json(result);
@@ -1486,9 +1570,9 @@ router.get("/following/:id", (req, res) => {
 // Obtener estadísticas de un usuario (seguidores, seguidos, publicaciones)
 router.get("/user-stats/:id", (req, res) => {
     const userId = req.params.id;
-    const sqlFollowers = `SELECT COUNT(*) AS count FROM followers WHERE followed_id = ?`;
-    const sqlFollowing = `SELECT COUNT(*) AS count FROM followers WHERE follower_id = ?`;
-    const sqlPosts = `SELECT COUNT(*) AS count FROM posts_generales WHERE autor = ?`;
+    const sqlFollowers = `SELECT COUNT(*) AS count FROM followers WHERE followed_id = ?`; // Cuenta cuántos seguidores tiene
+    const sqlFollowing = `SELECT COUNT(*) AS count FROM followers WHERE follower_id = ?`; // Cuenta a cuántos sigue
+    const sqlPosts = `SELECT COUNT(*) AS count FROM posts_generales WHERE autor = ?`; // Cuenta cuántos posts ha publicado
 
     conn.query(sqlFollowers, [userId], (err, followersRes) => {
         if (err) return res.status(500).json({ error: err.message });
@@ -1509,10 +1593,12 @@ router.get("/user-stats/:id", (req, res) => {
 //----------------------------FEEDS PARA EL PERFIL DE LA PERSONA----------------------------
 
 // Feed de tendencias (basado en popularidad)
+// Obtiene los 20 posts más "en tendencia": calcula un puntaje según likes/comentarios recientes y qué tan nuevo es el post
 router.get('/trending', (req, res) => {
     console.log('Endpoint /feed/trending llamado');
+    // Calcula un trending_score por post (likes + comentarios*2, dividido por horas desde la publicación)
     const query = `
-        SELECT 
+        SELECT
             p.id_post,
             p.descripcion,
             p.imagen,
@@ -1550,6 +1636,7 @@ router.get('/trending', (req, res) => {
             return res.json({ status: 0, mensaje: "Error en la consulta", datos: [] });
         }
         console.log('Posts obtenidos:', posts.length);
+        // Agrega a cada post en tendencia sus prendas detectadas antes de responder
         addPrendasToPosts(posts, (err, postsConPrendas) => {
             if (err) {
                 console.error('Error en addPrendasToPosts:', err);
@@ -1561,11 +1648,12 @@ router.get('/trending', (req, res) => {
     });
 });
 
-// Feed de siguiendo 
+// Feed de siguiendo
+// Obtiene los posts de los usuarios que sigue el usuario dado, más recientes primero
 router.get('/feed/:id', (req, res) => {
     const { id } = req.params;
     let obtener = `
-        SELECT 
+        SELECT
             p.id_post,
             p.descripcion,
             p.imagen,
@@ -1588,6 +1676,7 @@ router.get('/feed/:id', (req, res) => {
         if (error) {
             res.json({ status: 0, mensaje: "Error al obtener feed", datos: [] });
         } else {
+            // Agrega a cada post del feed sus prendas detectadas antes de responder
             addPrendasToPosts(posts, (err, postsConPrendas) => {
                 if (err) {
                     console.error('Error al añadir prendas:', err);
@@ -1600,16 +1689,17 @@ router.get('/feed/:id', (req, res) => {
 });
 
 
-// Feed de para ti 
+// Feed de para ti
 
 // Actualizar preferencias del usuario
+// Cuando un usuario interactúa con un post, suma puntaje a las prendas (labels) de ese post en sus preferencias
 router.post('/actualizarPreferencias', (req, res) => {
     const { id_user, id_post } = req.body;
     const obtenerPrendas = `
         SELECT label
         FROM post_prendas
         WHERE id_post = ?
-    `;
+    `; // Obtiene las etiquetas de las prendas del post
     conn.query(obtenerPrendas, [id_post], (error, prendas) => {
         if (error) {
             return res.json({status: 0, mensaje: "Error al obtener prendas" });
@@ -1625,6 +1715,7 @@ router.post('/actualizarPreferencias', (req, res) => {
 
         prendas.forEach(prenda => {
 
+            // Inserta la preferencia con score 1, o si ya existe, le suma 1 al score actual
             const insertar = `
                 INSERT INTO user_preferred_labels
                     (id_user, label, score)
@@ -1658,10 +1749,12 @@ router.post('/actualizarPreferencias', (req, res) => {
 });
 
 // Feed Para Ti
+// Obtiene posts recomendados según las prendas que el usuario prefiere (basado en su historial de interacciones)
 router.get('/parati/:id', (req, res) => {
 
     const { id } = req.params;
 
+    // Suma la relevancia (score) de las prendas del post que coinciden con las preferencias del usuario
     let obtener = `
         SELECT
             p.id_post,
@@ -1709,6 +1802,7 @@ router.get('/parati/:id', (req, res) => {
             });
         }
 
+        // Agrega a cada post recomendado sus prendas detectadas antes de responder
         addPrendasToPosts(posts, (err, postsConPrendas) => {
 
             if (err) {
@@ -1733,7 +1827,7 @@ router.get('/parati/:id', (req, res) => {
     //-------Categorías para los posts -------
     // Obtener todas las categorías
 router.get('/categorias', (req, res) => {
-        const sql = 'SELECT id_categoria, name_categoria FROM categorias ORDER BY id_categoria';
+        const sql = 'SELECT id_categoria, name_categoria FROM categorias ORDER BY id_categoria'; // Trae todas las categorías ordenadas
         conn.query(sql, (err, results) => {
             if (err) {
                 console.error(err);
@@ -1743,8 +1837,9 @@ router.get('/categorias', (req, res) => {
         });
 });
 
-// outfit del dia con ia 
+// outfit del dia con ia
 
+// Genera un outfit sugerido con IA (Gemini) según ocasión, clima y colores, y le busca una foto a cada prenda en Pexels
 router.post('/outfit-ia/generar', async (req, res) => {
   const { ocasion, clima, colores } = req.body;
 
@@ -1753,8 +1848,9 @@ router.post('/outfit-ia/generar', async (req, res) => {
   }
 
   try {
-    const outfitIA = await generarOutfitIA(ocasion, clima, colores);
+    const outfitIA = await generarOutfitIA(ocasion, clima, colores); // Genera la descripción del outfit con IA
 
+    // Busca en paralelo una foto de stock para cada prenda del outfit generado
     const [imagenTop, imagenBottom, imagenShoes, imagenAccessory] = await Promise.all([
     buscarImagenPexels(outfitIA.top_query),
     buscarImagenPexels(outfitIA.bottom_query),
@@ -1777,6 +1873,7 @@ router.post('/outfit-ia/generar', async (req, res) => {
   }
 });
 
+// Guarda un outfit generado por la IA para que el usuario lo consulte después
 router.post('/outfit-ia/guardar', (req, res) => {
   const { id_usuario, json_generado } = req.body;
 
@@ -1785,7 +1882,7 @@ router.post('/outfit-ia/guardar', (req, res) => {
   }
 
   const jsonTexto = JSON.stringify(json_generado);
-  const query = 'INSERT INTO outfits_guardados (id_usuario, json_generado) VALUES (?, ?)';
+  const query = 'INSERT INTO outfits_guardados (id_usuario, json_generado) VALUES (?, ?)'; // Inserta el outfit como JSON
 
   conn.query(query, [id_usuario, jsonTexto], (err, resultado) => {
     if (err) {
@@ -1799,7 +1896,7 @@ router.post('/outfit-ia/guardar', (req, res) => {
 // Devuelve los outfits guardados de un usuario
 router.get('/outfit-ia/guardados/:id_usuario', (req, res) => {
   const { id_usuario } = req.params;
-  const query = 'SELECT id_outfit, id_usuario, fecha, json_generado FROM outfits_guardados WHERE id_usuario = ? ORDER BY fecha DESC';
+  const query = 'SELECT id_outfit, id_usuario, fecha, json_generado FROM outfits_guardados WHERE id_usuario = ? ORDER BY fecha DESC'; // Trae los outfits guardados por ese usuario, más recientes primero
 
   conn.query(query, [id_usuario], (err, filas) => {
     if (err) {
@@ -1813,7 +1910,7 @@ router.get('/outfit-ia/guardados/:id_usuario', (req, res) => {
 // Elimina un outfit guardado
 router.delete('/outfit-ia/eliminar/:id_outfit', (req, res) => {
   const { id_outfit } = req.params;
-  const query = 'DELETE FROM outfits_guardados WHERE id_outfit = ?';
+  const query = 'DELETE FROM outfits_guardados WHERE id_outfit = ?'; // Borra el outfit guardado indicado
 
   conn.query(query, [id_outfit], (err) => {
     if (err) {

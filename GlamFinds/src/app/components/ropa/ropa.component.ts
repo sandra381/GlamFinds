@@ -19,31 +19,47 @@ import { RandlookComponent } from '../randlook/randlook.component';
 import { TryOnComponent } from '../try-on/try-on.component';
 
 
+// Tono de color con nombre en español y su equivalente RGB (usado para filtrar por color).
 interface ColorShade{
   name: string;
   rgb: [number, number, number];
 }
+// Nombre de una prenda usada para filtrar los posts por tipo de artículo.
 interface Prenda{
   name: string;
 }
+
+// Componente del feed de la categoría "Ropa" (ruta "/ropa").
+// Muestra el listado de posts de ropa estilo Pinterest (masonry), con
+// likes, comentarios, guardado en favoritos, filtro por color y por tipo de
+// prenda, y accesos rápidos a las herramientas (agregar post, extractor de
+// color, moodboard, look aleatorio, armario virtual).
 @Component({
   selector: 'app-ropa',
   templateUrl: './ropa.component.html',
   styleUrls: ['./ropa.component.scss']
 })
 export class RopaComponent implements OnInit{
+  // Todos los posts de ropa obtenidos del backend, sin filtrar.
   dataSource: Array<Posts> = new Array<Posts>();
   filteredItems: Array<Posts> = [];  // Almacena los artículos filtrados por color
   filteredItem: Array<Posts> = [];  // Almacena los artículos filtrados por prenda
 
+  // Controla si se muestra el widget lateral (actualmente sin uso visible en el feed).
   showWidget: boolean = true;
 
+  // Comentarios de cada post, indexados por id_post.
   comentarios: Array<Comments2[]> = [];
+  // Datos de perfil (foto, usuario) del autor de cada post, indexados por id_user.
   perfil: Array<Usuario2> = [];
+  // Cantidad de likes de cada post, indexada por id_post.
   likes: Array<Likes_cant> = [];
   id_com: number;
+  // Texto que el usuario está escribiendo en el input de comentario de cada post, indexado por id_post.
   comentario: { [key: number]: string } = {};
+  // Estado visual de "like" (true/false) por índice del *ngFor.
   toggle: boolean[] = [];
+  // Estado visual de "guardado" (true/false) por índice del *ngFor.
   toggle1: boolean[] = [];
   id_lik: number;
   valores: Likes;
@@ -51,7 +67,9 @@ export class RopaComponent implements OnInit{
 
   constructor(private router:Router,private backend1: BackendService,private activateRouter:ActivatedRoute,public dialog: MatDialog,public snackBar: MatSnackBar){ }
   showShortDesciption = true
+  // Id del usuario actualmente logueado, leído de localStorage.
   usuariolog = Number(localStorage.getItem('ids'));
+  // Modelo "plantilla" de un post (no se usa para mostrar datos reales, sirve de referencia de forma).
   articulo: any={
     id_post:0,
     descripcion:'',
@@ -73,6 +91,7 @@ export class RopaComponent implements OnInit{
     link5:'',
     link6:'',
   }
+  // Modelo "plantilla" de un usuario (no se usa para mostrar datos reales, sirve de referencia de forma).
   user: any={
     id_user:0,
     usuario:'',
@@ -91,10 +110,13 @@ export class RopaComponent implements OnInit{
   cant_like:0;
 
 
+  // Tonos de color seleccionados actualmente para filtrar (según el color general elegido).
   selectedColorTones: ColorShade[] = [];
 
+  // Prendas seleccionadas actualmente para filtrar.
   selectedClothes: Prenda[] = [];
 
+  // Diccionario de tipos de prenda disponibles para filtrar (clave = nombre en inglés usado por la IA).
   clothes: {[key:string]:Prenda[]} = {
     bag: [{ name: 'bag' }],
     belt: [{ name: 'belt' }],
@@ -132,6 +154,9 @@ export class RopaComponent implements OnInit{
     watch: [{ name: 'watch' }]}
 
 
+  // Paleta grande de tonos de color en español (nombre + RGB), agrupados por
+  // color general. Se usa en seleccionarPorRango() para encontrar los posts
+  // cuyo color dominante coincide con el tono elegido.
   colorShades: { [key: string]: ColorShade[] } = {
         amarillo: [
           { name: 'almendra', rgb: [239, 222, 205] },
@@ -312,7 +337,7 @@ export class RopaComponent implements OnInit{
           { name: 'rojo oscuro', rgb: [97, 21, 38] },
           { name: 'rojo ladrillo', rgb: [178, 34, 34] },
           { name: 'rojo oxido', rgb: [165, 42, 42] },
-          { name: 'rojo sangre', rgb: [150, 7, 38] }
+          { name: 'rojo sangre', rgb: [150, 7, 38] }
       ],
       rosa: [
           { name: 'rosa bebe', rgb: [255, 192, 203] },
@@ -351,6 +376,13 @@ export class RopaComponent implements OnInit{
           { name: 'verde cafe', rgb: [53, 52, 46] },
       ]
     };
+
+  // Se ejecuta automáticamente al crear el componente.
+  // Pide al backend todos los posts de ropa y, por cada uno: inicializa su
+  // campo de comentario vacío y sus estados de like/guardado en false;
+  // luego carga en orden los comentarios, el conteo de likes y el perfil
+  // del autor de cada post. Al terminar, restaura desde localStorage el
+  // estado de like/guardado de visitas anteriores.
   ngOnInit(): void {
     this.backend1.obtenerRopa().subscribe(async x => {
       this.dataSource = x.datos;
@@ -379,6 +411,7 @@ export class RopaComponent implements OnInit{
     })
   }
 
+  // Pide al backend los comentarios de un post puntual y los guarda en "comentarios[id_com]".
   async obtenerComentariosAsync(id_com: number) {
     return new Promise<void>(resolve => {
       this.backend1.obtenerComentarios(id_com).subscribe(async z => {
@@ -389,6 +422,7 @@ export class RopaComponent implements OnInit{
     });
   }
 
+  // Pide al backend la cantidad de likes de un post puntual y la guarda en "likes[id_com]".
   async countLikeAsync(id_com: number) {
     return new Promise<void>(resolve => {
       this.backend1.countLike(id_com).subscribe(y => {
@@ -399,6 +433,8 @@ export class RopaComponent implements OnInit{
     });
 
   }
+
+  // Pide al backend los datos de perfil (foto, usuario) de un autor puntual y los guarda en "perfil[id_us]".
   async obtenerPerfilAsync(id_us: number) {
     return new Promise<void>(resolve => {
       this.backend1.obtenerUsuario(id_us).subscribe(async a => {
@@ -408,6 +444,10 @@ export class RopaComponent implements OnInit{
       });
     });
   }
+
+  // Se ejecuta al hacer click en el botón/ícono de "like" de un post.
+  // Si ya tenía like, lo quita (baja el contador); si no, lo agrega (sube el
+  // contador). Actualiza localStorage para recordar el estado.
   like(post: number, index: number) {
     var id_new = localStorage.getItem('ids');
     if (id_new) {
@@ -428,6 +468,10 @@ export class RopaComponent implements OnInit{
       }
     }
   }
+
+  // Se ejecuta al hacer click en el botón "Publicar" comentario de un post.
+  // Valida que no esté vacío, filtra palabras inapropiadas (bad-words) y,
+  // si es válido, lo envía al backend; al final recarga la página.
   comment(post: number) {
     const comentario = this.comentario[post];
     if (comentario.trim() === '') {
@@ -476,6 +520,9 @@ export class RopaComponent implements OnInit{
     }
     location.reload();
   }
+
+  // Se ejecuta al hacer click en el botón/ícono de "guardar" de un post.
+  // Si ya estaba guardado lo quita; si no, lo guarda como favorito.
   save(post: number, index: number) {
     console.log("save");
     const id_new = localStorage.getItem('ids');
@@ -501,9 +548,13 @@ export class RopaComponent implements OnInit{
         }
     }
   }
+
+  // Consulta en localStorage si un post ya fue marcado como guardado.
   isSaved(post: number): boolean {
     return localStorage.getItem(`saveState_${post}`) === 'true';
   }
+
+  // Restaura desde localStorage el estado de like/guardado de cada post (de visitas anteriores).
   private inicializarEstados() {
       for (let i = 0; i < this.dataSource.length; i++) {
         const post = this.dataSource[i].id_post;
@@ -519,6 +570,7 @@ export class RopaComponent implements OnInit{
       }
     }
 
+  // Guarda en localStorage el estado actual de like/guardado de todos los posts.
   private actualizarEstadoLocalStorage() {
       for (let i = 0; i < this.dataSource.length; i++) {
         const post = this.dataSource[i].id_post;
@@ -526,27 +578,42 @@ export class RopaComponent implements OnInit{
         localStorage.setItem(`saveState_${post}`, JSON.stringify(this.toggle1[i]));
       }
     }
+
+  // Se ejecuta al hacer click en "Publicar" de la barra superior; abre el diálogo para crear una publicación.
   openAgregar(){
     const dialogRef = this.dialog.open(AgregarPubUComponent, {restoreFocus: false,id: 'agregar'} );
   }
+
+  // Se ejecuta al hacer click en la herramienta de extracción de color; abre su diálogo.
   open(){
     const dialogRef = this.dialog.open(ImagecolorComponent, {restoreFocus: false,id: 'color'} );
   }
+
+  // Se ejecuta al hacer click en la herramienta de moodboard; abre su diálogo.
   openMood(){
     const dialogRef = this.dialog.open(MoodboardComponent, {restoreFocus: false,id: 'board'} );
   }
+
+  // Se ejecuta al hacer click en la herramienta de look aleatorio; abre su diálogo.
   openRand(){
     const dialogRef = this.dialog.open(RandlookComponent, {restoreFocus: false,id: 'look'} );
   }
+
+  // Se ejecuta al hacer click en la herramienta de armario virtual (try-on); abre su diálogo.
   openTryOn(){
     const dialogRef = this.dialog.open(TryOnComponent, {restoreFocus: false,id: 'tryon'} );
   }
+
+  // Se ejecuta al hacer click en "Editar" sobre un comentario propio; abre
+  // el diálogo de edición pasándole el post, el usuario y el comentario a editar.
   openMod(postid:number,id_comment:number){
     var id_new = localStorage.getItem('ids');
     if (id_new) {
     var navegante = parseInt(id_new);
     const dialogRef = this.dialog.open(ModificarCommComponent, {restoreFocus: false,id: 'mod',data:{id:postid,nav:navegante,comm:id_comment}} );}
   }
+
+  // Se ejecuta al hacer click en "Eliminar" sobre un comentario propio; lo borra en el backend y recarga la página.
   deleteComment(post: number , id_comment:number) {
     const id_new = localStorage.getItem('ids');
     if (id_new) {
@@ -562,6 +629,8 @@ export class RopaComponent implements OnInit{
     }
   }
 
+  // Se ejecuta al elegir un color en el modal de filtro por color: filtra
+  // "dataSource" según los tonos de ese color y guarda el resultado en "filteredItems".
   seleccionarPorRango(colorGeneral: string) {
     this.selectedColorTones = this.colorShades[colorGeneral.toLowerCase()];
     if (!this.selectedColorTones || this.selectedColorTones.length === 0) {
@@ -580,6 +649,9 @@ export class RopaComponent implements OnInit{
     });
     this.isModalOpen = false;
   }
+
+  // Se ejecuta al elegir un tipo de prenda en el modal de filtro por prenda:
+  // filtra "dataSource" según ese tipo y guarda el resultado en "filteredItems".
   seleccionarPorRopa(prenda: string) {
     this.selectedClothes = this.clothes[prenda.toLowerCase()] || [];
     if (!this.selectedClothes || this.selectedClothes.length === 0) {
@@ -605,24 +677,37 @@ export class RopaComponent implements OnInit{
     });
     this.isModalOpen2 = false;
   }
+
+  // Se ejecuta al hacer click en "Limpiar filtro"; restaura "filteredItems"
+  // a todos los posts y cierra ambos modales de filtro.
   limpiarFiltro(): void {
     this.filteredItems = this.dataSource;
     this.isModalOpen = false;
     this.isModalOpen2 = false;
   }
+
+  // Función auxiliar usada en el HTML para decidir si un archivo es imagen o video (por su extensión).
   isImage(fileName: string): boolean {
     return fileName.match(/\.(jpeg|jpg|gif|png)$/) != null;
   }
 
+  // Controla si el modal de filtro por color está abierto.
   isModalOpen: boolean = false;
+  // Controla si el modal de filtro por prenda está abierto.
   isModalOpen2: boolean = false;
 
+  // Se ejecuta al hacer click en el botón que abre/cierra el modal de filtro por color.
   toggleModal() {
     this.isModalOpen = !this.isModalOpen;
   }
+
+  // Se ejecuta al hacer click en el botón que abre/cierra el modal de filtro por prenda.
   toggleModal2() {
     this.isModalOpen2 = !this.isModalOpen2;
   }
+
+  // Se ejecuta al hacer click en cualquier parte de la ventana; si el click
+  // fue sobre el fondo del modal de color, lo cierra.
   onWindowClick(event: Event) {
     const modal = document.getElementById('colorModal');
     if (event.target === modal) {

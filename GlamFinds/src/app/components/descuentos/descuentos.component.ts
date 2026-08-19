@@ -16,37 +16,69 @@ import { MatDialog } from '@angular/material/dialog';
 import { ModificarCommPComponent } from '../modificar-comm-p/modificar-comm-p.component';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Filter } from 'bad-words';
+
+// Componente del feed de la categoría "Descuentos" (ruta "/descuentos").
+// Muestra el listado de posts de publicidad/descuentos (tabla
+// posts_publicidad), con likes, comentarios, guardado en favoritos y chips
+// para filtrar por categoría. A diferencia de ropa/maquillaje/etc., no
+// filtra por color ni por tipo de prenda (esos métodos existen pero no hacen nada).
 @Component({
   selector: 'app-descuentos',
   templateUrl: './descuentos.component.html',
   styleUrls: ['./descuentos.component.scss']
 })
 export class DescuentosComponent  implements OnInit {
+  // Todos los posts de descuentos obtenidos del backend, sin filtrar.
   dataSource: Array<Publicidad> = new Array<Publicidad>();
+  // Posts que se muestran actualmente en pantalla (según el chip de categoría activo).
   filteredItems: Array<Publicidad> = [];
+  // Comentarios de cada post, indexados por id_post.
   comentarios: Array<Comments2[]> = [];
+  // Datos de perfil (foto, usuario) del autor de cada post, indexados por id_user.
   perfil: Array<Usuario2> = [];
+  // Cantidad de likes de cada post, indexada por id_post.
   likes: Array<Likes_cant> = [];
   id_com: number;
+  // Texto que el usuario está escribiendo en el input de comentario de cada post, indexado por id_post.
   comentario: { [key: number]: string } = {};
+  // Estado visual de "like" (true/false) por índice del *ngFor.
   toggle: boolean[] = [];
+  // Estado visual de "guardado" (true/false) por índice del *ngFor.
   toggle1: boolean[] = [];
   id_lik: number;
   valores: Likes;
   id_us: number;
+  // Controla si se muestra el widget lateral (actualmente sin uso visible en el feed).
   showWidget: boolean = true;
+  // Id del usuario actualmente logueado, leído de localStorage.
   usuariolog = Number(localStorage.getItem('ids'));
+  // Controla si el modal de filtro por color está abierto (sin uso real en este feed).
   isModalOpen: boolean = false;
+  // Controla si el modal de filtro por prenda está abierto (sin uso real en este feed).
   isModalOpen2: boolean = false;
+  // Chip de categoría actualmente activo (por defecto "Todo").
   activeChip: string = 'Todo';
+
+  // Se ejecuta al hacer click en el botón que abre/cierra el modal de filtro por color.
   toggleModal() { this.isModalOpen = !this.isModalOpen; }
+  // Se ejecuta al hacer click en el botón que abre/cierra el modal de filtro por prenda.
   toggleModal2() { this.isModalOpen2 = !this.isModalOpen2; }
+  // Se ejecuta al hacer click en "Limpiar filtro": restaura "filteredItems"
+  // a todos los posts, vuelve el chip activo a "Todo" y cierra ambos modales.
   limpiarFiltro(): void { this.filteredItems = [...this.dataSource]; this.activeChip = 'Todo'; this.isModalOpen = false; this.isModalOpen2 = false; }
+  // Se ejecuta al elegir un color en el modal de filtro por color. En este
+  // feed no aplica ningún filtrado real, solo cierra el modal.
   seleccionarPorRango(color: string) { this.isModalOpen = false; }
+  // Se ejecuta al elegir una prenda en el modal de filtro por prenda. En
+  // este feed no aplica ningún filtrado real, solo cierra el modal.
   seleccionarPorRopa(prenda: string) { this.isModalOpen2 = false; }
+  // Se ejecuta al hacer click en un chip de categoría. Si es "Todo" muestra
+  // todos los posts; si no, filtra "dataSource" dejando solo los posts cuya
+  // categoría coincida con el chip elegido.
   filtrarChip(categoria: string) { this.activeChip = categoria; this.filteredItems = categoria === 'Todo' ? [...this.dataSource] : this.dataSource.filter(p => p.name_categoria?.toLowerCase() === categoria.toLowerCase()); }
   constructor(private router:Router,private backend1: BackendService,private activateRouter:ActivatedRoute,public dialog: MatDialog,public snackBar: MatSnackBar){ }
   showShortDesciption = true
+  // Modelo "plantilla" de un post (no se usa para mostrar datos reales, sirve de referencia de forma).
   articulo: any={
     id_post:0,
     descripcion:'',
@@ -56,6 +88,7 @@ export class DescuentosComponent  implements OnInit {
     id_categoria:0,
     name_categoria:'',
   }
+  // Modelo "plantilla" de un usuario (no se usa para mostrar datos reales, sirve de referencia de forma).
   user: any={
     id_user:0,
     usuario:'',
@@ -72,6 +105,14 @@ export class DescuentosComponent  implements OnInit {
   id_new: number;
   id_likes:0;
   cant_like:0;
+
+  // Se ejecuta automáticamente al crear el componente.
+  // Pide al backend todos los posts de descuentos y los copia también a
+  // "filteredItems" (sin filtrar todavía). Por cada post: inicializa su
+  // campo de comentario vacío y sus estados de like/guardado en false;
+  // luego carga en orden los comentarios, el conteo de likes y el perfil
+  // del autor de cada post. Al terminar, restaura desde localStorage el
+  // estado de like/guardado de visitas anteriores.
   ngOnInit(): void {
     this.backend1.obtenerDescuentos().subscribe(async x => {
       this.dataSource = x.datos;
@@ -101,6 +142,9 @@ export class DescuentosComponent  implements OnInit {
       this.inicializarEstados();
     })
   }
+
+  // Pide al backend los comentarios de un post de publicidad puntual y los
+  // guarda en "comentarios[id_com]" (usa el método "...P" del backend, para posts de publicidad).
   async obtenerComentariosAsync(id_com: number) {
     return new Promise<void>(resolve => {
       this.backend1.obtenerComentarioP(id_com).subscribe(async z => {
@@ -110,6 +154,8 @@ export class DescuentosComponent  implements OnInit {
       });
     });
   }
+
+  // Pide al backend la cantidad de likes de un post de publicidad puntual y la guarda en "likes[id_com]".
   async countLikeAsync(id_com: number) {
     return new Promise<void>(resolve => {
       console.log(id_com);
@@ -120,6 +166,8 @@ export class DescuentosComponent  implements OnInit {
       });
     });
   }
+
+  // Pide al backend los datos de perfil (foto, usuario) de un autor puntual y los guarda en "perfil[id_us]".
   async obtenerPerfilAsync(id_us: number) {
     return new Promise<void>(resolve => {
       this.backend1.obtenerUsuario(id_us).subscribe(async a => {
@@ -129,6 +177,10 @@ export class DescuentosComponent  implements OnInit {
       });
     });
   }
+
+  // Se ejecuta al hacer click en el botón/ícono de "like" de un post de descuento.
+  // Si ya tenía like, lo quita (baja el contador); si no, lo agrega (sube el
+  // contador). Actualiza localStorage para recordar el estado.
   like(post: number, index: number) {
     var id_new = localStorage.getItem('ids');
     if (id_new) {
@@ -151,6 +203,10 @@ export class DescuentosComponent  implements OnInit {
     }
   }
 
+  // Se ejecuta al hacer click en el botón "Publicar" comentario de un post de descuento.
+  // Valida que no esté vacío, filtra palabras inapropiadas (bad-words) y,
+  // si es válido, lo envía al backend (usa el método "...P" de publicidad);
+  // al final recarga la página.
   comment(post: number) {
     const comentario = this.comentario[post];
     if (comentario.trim() === '') {
@@ -199,6 +255,9 @@ export class DescuentosComponent  implements OnInit {
     }
     location.reload();
   }
+
+  // Se ejecuta al hacer click en el botón/ícono de "guardar" de un post de descuento.
+  // Si ya estaba guardado lo quita (eliminarSaveP); si no, lo guarda como favorito (guardarFavoritosP).
   save(post: number, index: number) {
     console.log("save");
     const id_new = localStorage.getItem('ids');
@@ -226,10 +285,13 @@ export class DescuentosComponent  implements OnInit {
         }
     }
   }
+
+  // Consulta en localStorage si un post ya fue marcado como guardado.
   isSaved(post: number): boolean {
     return localStorage.getItem(`saveState_${post}`) === 'true';
   }
 
+  // Restaura desde localStorage el estado de like/guardado de cada post (de visitas anteriores).
   private inicializarEstados() {
       for (let i = 0; i < this.dataSource.length; i++) {
         const post = this.dataSource[i].id_post;
@@ -244,6 +306,7 @@ export class DescuentosComponent  implements OnInit {
       }
     }
 
+  // Guarda en localStorage el estado actual de like/guardado de todos los posts.
   private actualizarEstadoLocalStorage() {
       for (let i = 0; i < this.dataSource.length; i++) {
         const post = this.dataSource[i].id_post;
@@ -251,10 +314,15 @@ export class DescuentosComponent  implements OnInit {
         localStorage.setItem(`saveState_${post}`, JSON.stringify(this.toggle1[i]));
       }
     }
+
+  // Se ejecuta al hacer click en "Publicar" de la barra superior; abre el diálogo para crear una publicación.
   openAgregar(){
     const dialogRef = this.dialog.open(AgregarPubUComponent, {restoreFocus: false,id: 'agregar'} );
   }
 
+  // Se ejecuta al hacer click en "Editar" sobre un comentario propio; abre
+  // el diálogo de edición de comentario de publicidad, pasándole el post,
+  // el usuario y el comentario a editar.
   openMod(postid:number,id_comment:number){
     var id_new = localStorage.getItem('ids');
     if (id_new) {
@@ -262,6 +330,8 @@ export class DescuentosComponent  implements OnInit {
     const dialogRef = this.dialog.open(ModificarCommPComponent, {restoreFocus: false,id: 'mod',data:{id:postid,nav:navegante,comm:id_comment}} );}
   }
 
+  // Se ejecuta al hacer click en "Eliminar" sobre un comentario propio; lo
+  // borra en el backend (método "...P" de publicidad) y recarga la página.
   deleteComment(post: number , id_comment:number) {
     const id_new = localStorage.getItem('ids');
     if (id_new) {

@@ -3,7 +3,6 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Comments } from 'src/app/models/Comments';
 import { Comments2 } from 'src/app/models/Comments2';
 import { Likes } from 'src/app/models/Likes';
-import { Likes_cant } from 'src/app/models/Likes_cant';
 import { Posts } from 'src/app/models/Posts';
 import { Publicidad } from 'src/app/models/Publicidad';
 import { Publicidad_post } from 'src/app/models/Publicidad_post';
@@ -15,27 +14,41 @@ import { MatDialog } from '@angular/material/dialog';
 import { ModificarCommPComponent } from '../modificar-comm-p/modificar-comm-p.component';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Filter } from 'bad-words';
+
+// Componente del feed de la categoría "Dups" / outfit del día (ruta "/dups").
+// Muestra el listado de posts de publicidad de esta categoría (tabla
+// posts_publicidad), con likes, comentarios y guardado en favoritos.
+// A diferencia de descuentos/, no tiene chips de categoría ni filtros.
 @Component({
   selector: 'app-dups',
   templateUrl: './dups.component.html',
   styleUrls: ['./dups.component.scss']
 })
 export class DupsComponent  implements OnInit {
+  // Todos los posts de la categoría "Dups" obtenidos del backend.
   dataSource: Array<Publicidad> = new Array<Publicidad>();
+  // Comentarios de cada post, indexados por id_post.
   comentarios: Array<Comments2[]> = [];
+  // Datos de perfil (foto, usuario) del autor de cada post, indexados por id_user.
   perfil: Array<Usuario2> = [];
+  // Cantidad de likes de cada post, indexada por id_post.
   likes: Array<Likes_cant> = [];
   id_com: number;
+  // Texto que el usuario está escribiendo en el input de comentario de cada post, indexado por id_post.
   comentario: { [key: number]: string } = {};
+  // Estado visual de "like" (true/false) por índice del *ngFor.
   toggle: boolean[] = [];
+  // Estado visual de "guardado" (true/false) por índice del *ngFor.
   toggle1: boolean[] = [];
   id_lik: number;
   valores: Likes;
   id_us: number;
+  // Controla si se muestra el widget lateral (actualmente sin uso visible en el feed).
   showWidget: boolean = true;
 
   constructor(private router:Router,private backend1: BackendService,private activateRouter:ActivatedRoute,public dialog: MatDialog,public snackBar: MatSnackBar){ }
   showShortDesciption = true
+  // Modelo "plantilla" de un post (no se usa para mostrar datos reales, sirve de referencia de forma).
   articulo: any={
     id_post:0,
     descripcion:'',
@@ -45,6 +58,7 @@ export class DupsComponent  implements OnInit {
     id_categoria:0,
     name_categoria:'',
   }
+  // Modelo "plantilla" de un usuario (no se usa para mostrar datos reales, sirve de referencia de forma).
   user: any={
     id_user:0,
     usuario:'',
@@ -61,6 +75,13 @@ export class DupsComponent  implements OnInit {
   id_new: number;
   id_likes:0;
   cant_like:0;
+
+  // Se ejecuta automáticamente al crear el componente.
+  // Pide al backend todos los posts de "Dups" y, por cada uno: inicializa
+  // su campo de comentario vacío y sus estados de like/guardado en false;
+  // luego carga en orden los comentarios, el conteo de likes y el perfil
+  // del autor de cada post. Al terminar, restaura desde localStorage el
+  // estado de like/guardado de visitas anteriores.
   ngOnInit(): void {
     this.backend1.obtenerDups().subscribe(async x => {
       this.dataSource = x.datos;
@@ -85,6 +106,9 @@ export class DupsComponent  implements OnInit {
       this.inicializarEstados();
     })
   }
+
+  // Pide al backend los comentarios de un post puntual y los guarda en
+  // "comentarios[id_com]" (usa el método "...P" del backend, para posts de publicidad).
   async obtenerComentariosAsync(id_com: number) {
     return new Promise<void>(resolve => {
       this.backend1.obtenerComentarioP(id_com).subscribe(async z => {
@@ -94,6 +118,8 @@ export class DupsComponent  implements OnInit {
       });
     });
   }
+
+  // Pide al backend la cantidad de likes de un post puntual y la guarda en "likes[id_com]".
   async countLikeAsync(id_com: number) {
     return new Promise<void>(resolve => {
       console.log(id_com);
@@ -104,6 +130,8 @@ export class DupsComponent  implements OnInit {
       });
     });
   }
+
+  // Pide al backend los datos de perfil (foto, usuario) de un autor puntual y los guarda en "perfil[id_us]".
   async obtenerPerfilAsync(id_us: number) {
     return new Promise<void>(resolve => {
       this.backend1.obtenerUsuario(id_us).subscribe(async a => {
@@ -113,6 +141,10 @@ export class DupsComponent  implements OnInit {
       });
     });
   }
+
+  // Se ejecuta al hacer click en el botón/ícono de "like" de un post.
+  // Si ya tenía like, lo quita (baja el contador); si no, lo agrega (sube
+  // el contador). Actualiza localStorage para recordar el estado.
   like(post: number, index: number) {
     var id_new = localStorage.getItem('ids');
     if (id_new) {
@@ -136,6 +168,10 @@ export class DupsComponent  implements OnInit {
         }
     }
   }
+
+  // Se ejecuta al hacer click en el botón "Publicar" comentario de un post.
+  // Valida que no esté vacío, filtra palabras inapropiadas (bad-words) y,
+  // si es válido, lo envía al backend; al final recarga la página.
   comment(post: number) {
     const comentario = this.comentario[post];
     if (comentario.trim() === '') {
@@ -184,6 +220,9 @@ export class DupsComponent  implements OnInit {
     }
     location.reload();
   }
+
+  // Se ejecuta al hacer click en el botón/ícono de "guardar" de un post.
+  // Si ya estaba guardado lo quita (eliminarSaveP); si no, lo guarda como favorito (guardarFavoritosP).
   save(post: number, index: number) {
     console.log("save");
     const id_new = localStorage.getItem('ids');
@@ -211,9 +250,13 @@ export class DupsComponent  implements OnInit {
         }
     }
   }
+
+  // Consulta en localStorage si un post ya fue marcado como guardado.
   isSaved(post: number): boolean {
     return localStorage.getItem(`saveState_${post}`) === 'true';
   }
+
+  // Restaura desde localStorage el estado de like/guardado de cada post (de visitas anteriores).
   private inicializarEstados() {
     for (let i = 0; i < this.dataSource.length; i++) {
       const post = this.dataSource[i].id_post;
@@ -228,6 +271,7 @@ export class DupsComponent  implements OnInit {
     }
   }
 
+  // Guarda en localStorage el estado actual de like/guardado de todos los posts.
   private actualizarEstadoLocalStorage() {
     for (let i = 0; i < this.dataSource.length; i++) {
       const post = this.dataSource[i].id_post;
@@ -236,6 +280,9 @@ export class DupsComponent  implements OnInit {
     }
   }
 
+  // Se ejecuta al hacer click en "Editar" sobre un comentario propio; abre
+  // el diálogo de edición de comentario de publicidad, pasándole el post,
+  // el usuario y el comentario a editar.
   openMod(postid:number,id_comment:number){
     var id_new = localStorage.getItem('ids');
     if (id_new) {
@@ -243,6 +290,8 @@ export class DupsComponent  implements OnInit {
     const dialogRef = this.dialog.open(ModificarCommPComponent, {restoreFocus: false,id: 'mod',data:{id:postid,nav:navegante,comm:id_comment}} );}
   }
 
+  // Se ejecuta al hacer click en "Eliminar" sobre un comentario propio; lo
+  // borra en el backend (método "...P" de publicidad) y recarga la página.
   deleteComment(post: number , id_comment:number) {
     const id_new = localStorage.getItem('ids');
     if (id_new) {

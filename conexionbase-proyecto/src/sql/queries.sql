@@ -1,3 +1,4 @@
+-- Tabla de usuarios registrados en el sistema
 CREATE TABLE `usuarios` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `nombre` longtext NOT NULL,
@@ -9,6 +10,7 @@ CREATE TABLE `usuarios` (
   UNIQUE KEY `usuario` (`usuario`) USING HASH,
   CONSTRAINT `CONSTRAINT_1` CHECK (`sexo` = 'M' or `sexo` = 'F')
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+-- Tabla de comics publicados, cada uno pertenece a un usuario
 CREATE TABLE `comics` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `nombre` longtext NOT NULL,

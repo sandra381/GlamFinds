@@ -19,14 +19,22 @@ import { MoodboardComponent } from '../moodboard/moodboard.component';
 import { RandlookComponent } from '../randlook/randlook.component';
 import { TryOnComponent } from '../try-on/try-on.component';
 
+// Componente del feed de "Artículos" (blog, ruta "/articulo").
+// Muestra el listado de artículos publicados, con likes, comentarios,
+// guardado en favoritos, un botón "Leer más" para expandir el contenido
+// largo, y accesos a las herramientas (agregar artículo, extractor de
+// color, moodboard, look aleatorio, armario virtual).
 @Component({
   selector: 'app-articulos',
   templateUrl: './articulos.component.html',
   styleUrls: ['./articulos.component.scss']
 })
 export class ArticulosComponent implements OnInit{
+  // Todos los artículos obtenidos del backend.
   dataSource: Array<Articulos> = new Array<Articulos>();
+  // Datos de perfil (foto, usuario) del autor de cada artículo, indexados por id_user.
   perfil: Array<Usuario2> = [];
+  // Modelo "plantilla" de un artículo (no se usa para mostrar datos reales, sirve de referencia de forma).
   articulo: any={
     id_post:0,
     titulo:'',
@@ -37,6 +45,7 @@ export class ArticulosComponent implements OnInit{
     id_categoria:0,
     name_categoria:'',
   }
+  // Modelo "plantilla" de un usuario (no se usa para mostrar datos reales, sirve de referencia de forma).
   user: any={
     id_user:0,
     usuario:'',
@@ -48,11 +57,16 @@ export class ArticulosComponent implements OnInit{
     contrase:'',
     imagen:''
   }
+  // Comentarios de cada artículo, indexados por id_post.
   comentarios: Array<Comments2[]> = [];
+  // Cantidad de likes de cada artículo, indexada por id_post.
   likes: Array<Likes_cant> = [];
   id_com: number;
+  // Texto que el usuario está escribiendo en el input de comentario de cada artículo, indexado por id_post.
   comentario: { [key: number]: string } = {};
+  // Estado visual de "like" (true/false) por índice del *ngFor.
   toggle: boolean[] = [];
+  // Estado visual de "guardado" (true/false) por índice del *ngFor.
   toggle1: boolean[] = [];
   id_lik: number;
   valores: Likes;
@@ -60,13 +74,22 @@ export class ArticulosComponent implements OnInit{
   id_new: number;
   id_likes:0;
   cant_like:0;
+  // Id del usuario actualmente logueado, leído de localStorage.
   usuariolog = Number(localStorage.getItem('ids'));
+  // Controla, por índice, si el contenido largo de un artículo está expandido ("Leer más" / "Leer menos").
   mostrarMas: boolean[] = [];
   constructor(private router:Router,private backend1: BackendService,private activateRouter:ActivatedRoute,public dialog: MatDialog,public snackBar: MatSnackBar){
     this.dataSource.forEach((articulo, index) => {
       this.mostrarMas[index] = false;
     });
   }
+
+  // Se ejecuta automáticamente al crear el componente.
+  // Pide al backend todos los artículos y, por cada uno: inicializa su
+  // campo de comentario vacío y sus estados de like/guardado en false;
+  // luego carga en orden los comentarios, el conteo de likes y el perfil
+  // del autor de cada artículo. Al terminar, restaura desde localStorage el
+  // estado de like/guardado de visitas anteriores.
   ngOnInit(): void {
     this.backend1.obtenerArticulos().subscribe(async x => {
       this.dataSource = x.datos;
@@ -94,6 +117,9 @@ export class ArticulosComponent implements OnInit{
       this.inicializarEstados();
     });
   }
+
+  // Pide al backend los comentarios de un artículo puntual y los guarda en
+  // "comentarios[id_com]" (usa el método "...A" del backend, para artículos).
   async obtenerComentariosAsync(id_com: number) {
     return new Promise<void>(resolve => {
       this.backend1.obtenerComentariosA(id_com).subscribe(async z => {
@@ -103,6 +129,8 @@ export class ArticulosComponent implements OnInit{
       });
     });
   }
+
+  // Pide al backend la cantidad de likes de un artículo puntual y la guarda en "likes[id_com]".
   async countLikeAsync(id_com: number) {
     return new Promise<void>(resolve => {
       this.backend1.countLikeA(id_com).subscribe(y => {
@@ -113,6 +141,8 @@ export class ArticulosComponent implements OnInit{
     });
 
   }
+
+  // Pide al backend los datos de perfil (foto, usuario) de un autor puntual y los guarda en "perfil[id_us]".
   async obtenerPerfilAsync(id_us: number) {
     return new Promise<void>(resolve => {
       this.backend1.obtenerUsuario(id_us).subscribe(async a => {
@@ -122,6 +152,10 @@ export class ArticulosComponent implements OnInit{
       });
     });
   }
+
+  // Se ejecuta al hacer click en el botón/ícono de "like" de un artículo.
+  // Si ya tenía like, lo quita (baja el contador, sin bajar de 0); si no,
+  // lo agrega (sube el contador). Actualiza localStorage para recordar el estado.
   like(post: number, index: number) {
     var id_new = localStorage.getItem('ids');
     if (id_new) {
@@ -144,6 +178,11 @@ export class ArticulosComponent implements OnInit{
       }
     }
   }
+
+  // Se ejecuta al hacer click en el botón "Publicar" comentario de un artículo.
+  // Valida que no esté vacío, filtra palabras inapropiadas (bad-words) y,
+  // si es válido, lo envía al backend (método "...A" de artículos); al
+  // final recarga la página.
   comment(post: number) {
     const comentario = this.comentario[post];
     if (comentario.trim() === '') {
@@ -191,6 +230,9 @@ export class ArticulosComponent implements OnInit{
     }
     location.reload();
   }
+
+  // Se ejecuta al hacer click en el botón/ícono de "guardar" de un artículo.
+  // Si ya estaba guardado lo quita (eliminarSaveA); si no, lo guarda como favorito (guardarFavoritosA).
   save(post: number, index: number) {
     console.log("save");
     const id_new = localStorage.getItem('ids');
@@ -216,9 +258,13 @@ export class ArticulosComponent implements OnInit{
         }
     }
   }
+
+  // Consulta en localStorage si un artículo ya fue marcado como guardado.
   isSaved(post: number): boolean {
     return localStorage.getItem(`saveState_${post}`) === 'true';
   }
+
+  // Restaura desde localStorage el estado de like/guardado de cada artículo (de visitas anteriores).
   private inicializarEstados() {
       for (let i = 0; i < this.dataSource.length; i++) {
         const post = this.dataSource[i].id_post;
@@ -233,6 +279,8 @@ export class ArticulosComponent implements OnInit{
         }
       }
     }
+
+  // Guarda en localStorage el estado actual de like/guardado de todos los artículos.
   private actualizarEstadoLocalStorage() {
     for (let i = 0; i < this.dataSource.length; i++) {
       const post = this.dataSource[i].id_post;
@@ -240,6 +288,9 @@ export class ArticulosComponent implements OnInit{
       localStorage.setItem(`saveState_${post}`, JSON.stringify(this.toggle1[i]));
     }
   }
+
+  // Se ejecuta al hacer click en "Eliminar" sobre un comentario propio; lo
+  // borra en el backend (método "...A" de artículos) y recarga la página.
   deleteComment(post: number , id_comment:number) {
     const id_new = localStorage.getItem('ids');
     if (id_new) {
@@ -254,27 +305,45 @@ export class ArticulosComponent implements OnInit{
       );
     }
   }
+
+  // Se ejecuta al hacer click en "Editar" sobre un comentario propio; abre
+  // el diálogo de edición de comentario de artículo, pasándole el post, el
+  // usuario y el comentario a editar.
   openMod(postid:number,id_comment:number){
     var id_new = localStorage.getItem('ids');
     if (id_new) {
     var navegante = parseInt(id_new);
     const dialogRef = this.dialog.open(ModificarCommARTComponent, {restoreFocus: false,id: 'mod',data:{id:postid,nav:navegante,comm:id_comment}} );}
   }
+
+  // Se ejecuta al hacer click en "Publicar artículo" (o en "Editar" sobre un
+  // artículo propio, pasándole sus datos). Abre el diálogo de creación/edición de artículo.
   openAgregar(articuloData?: any){
     const dialogRef = this.dialog.open(AgregarARTComponent, {restoreFocus: false, id: 'agregar', data: articuloData || null} );
   }
+
+  // Se ejecuta al hacer click en la herramienta de extracción de color; abre su diálogo.
   open(){
     const dialogRef = this.dialog.open(ImagecolorComponent, {restoreFocus: false,id: 'color'} );
   }
+
+  // Se ejecuta al hacer click en la herramienta de moodboard; abre su diálogo.
   openMood(){
     const dialogRef = this.dialog.open(MoodboardComponent, {restoreFocus: false,id: 'board'} );
   }
+
+  // Se ejecuta al hacer click en la herramienta de look aleatorio; abre su diálogo.
   openRand(){
     const dialogRef = this.dialog.open(RandlookComponent, {restoreFocus: false,id: 'look'} );
   }
+
+  // Se ejecuta al hacer click en la herramienta de armario virtual (try-on); abre su diálogo.
   openTryOn(){
     const dialogRef = this.dialog.open(TryOnComponent, {restoreFocus: false,id: 'tryon'} );
   }
+
+  // Se ejecuta al hacer click en el botón "Leer más"/"Leer menos" de un
+  // artículo con contenido largo. Alterna el estado de expansión de ese artículo (por índice).
   toggleLeerMas(index: number): void {
     this.mostrarMas[index] = !this.mostrarMas[index];
   }

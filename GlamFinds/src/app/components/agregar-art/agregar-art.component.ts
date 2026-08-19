@@ -6,6 +6,12 @@ import { Router } from '@angular/router';
 import { Filter } from 'bad-words';
 import { BackendService } from 'src/app/services/backend.service';
 import { EditorModule } from '@tinymce/tinymce-angular';
+
+// Formulario para crear (o editar, si se abre con datos) un ARTÍCULO de
+// blog. Usa el editor de texto enriquecido TinyMCE para el contenido y
+// filtra palabras inapropiadas antes de publicar. Puede abrirse como
+// diálogo modal (con MAT_DIALOG_DATA) pasándole un artículo existente para
+// precargar sus campos en modo edición.
 @Component({
   selector: 'app-agregar-art',
   templateUrl: './agregar-art.component.html',
@@ -13,13 +19,23 @@ import { EditorModule } from '@tinymce/tinymce-angular';
 })
 export class AgregarARTComponent {
   url: any;
+  // Archivo de imagen seleccionado (File) para el artículo, listo para subirse.
 	msg = '';
+  // URL local (data URL) de la imagen seleccionada, o la URL/ruta de la
+  // imagen ya existente cuando se abre en modo edición.
   imgUrl= "";
+  // Tipo MIME del archivo seleccionado (ej. "image/png"), usado por isImage() para saber si mostrar la vista previa como imagen.
   fileType: string | null = null;
+  // Formulario reactivo del artículo (id, titulo, contenido, imagen, autor, categoría).
   formGroups: FormGroup = new FormGroup({});
+  // Referencia al elemento del editor TinyMCE en la plantilla.
   @ViewChild('content') editorComponent: ElementRef;
 
 
+  // Arma el formulario con el autor precargado (usuario logueado). Si el
+  // diálogo se abrió con "data" (un artículo existente pasado por
+  // MAT_DIALOG_DATA), precarga todos los campos con esos valores para
+  // habilitar el modo edición.
   constructor(private fb: FormBuilder,private router:Router, private backend:BackendService,public snackBar: MatSnackBar,public dialog: MatDialog, @Optional() @Inject(MAT_DIALOG_DATA) public data: any) {
     const user = localStorage.getItem('ids');
     this.formGroups = this.fb.group({
@@ -47,11 +63,23 @@ export class AgregarARTComponent {
     console.log(user);
   }
 
+  // Contenido HTML del artículo, enlazado al editor TinyMCE.
   article = "";
+
+  // Se ejecuta cada vez que cambia el contenido dentro del editor TinyMCE
+  // (evento propio del editor). Actualiza la variable "article" con el nuevo texto.
   modelChangeFn(e: string) {
     this.article = e;
     console.info(this.article);
   }
+
+  // Se ejecuta cuando el usuario hace click en el botón "Publicar" del formulario.
+  // 1) Valida que título, contenido y categoría no estén vacíos.
+  // 2) Pasa el contenido por un filtro de palabras inapropiadas en español (bad-words).
+  //    Si detecta una palabra ofensiva, muestra un aviso, limpia el formulario y no publica.
+  // 3) Si todo está bien, envía el formulario (con la imagen si hay una) al
+  //    backend (insertarArticulos). Muestra un mensaje de éxito o error según la respuesta
+  //    y, si tuvo éxito, recarga la página.
   guardarPostA() {
     const formData = new FormData();
     if (this.msg) {
@@ -123,6 +151,10 @@ export class AgregarARTComponent {
       }
     );
   }
+
+  // Se ejecuta cuando el usuario selecciona un archivo de imagen (evento
+  // "change" del <input type="file">). Guarda el tipo del archivo, lo guarda
+  // en "msg" para subirlo luego, y genera la vista previa en "imgUrl" leyendo el archivo como data URL.
   imagenSelect(event: any): void {
     const file = event.target.files[0];
     if (file) {
@@ -135,9 +167,14 @@ export class AgregarARTComponent {
       reader.readAsDataURL(file);
     }
   }
+
+  // Resetea (vacía) el formulario del artículo.
   limpiar(){
     this.formGroups.reset();
   }
+
+  // Función auxiliar usada en el HTML para decidir si la vista previa debe
+  // mostrarse como imagen (según el tipo de archivo detectado en imagenSelect()).
   isImage(fileUrl: string | null): boolean {
     return this.fileType?.startsWith('image') ?? false;
   }

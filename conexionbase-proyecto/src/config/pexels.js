@@ -1,3 +1,4 @@
+// Servicio que consulta la API de Pexels para obtener fotos de stock de las prendas sugeridas
 const axios = require('axios');
 
 const PEXELS_API_KEY = process.env.PEXELS_API_KEY;
@@ -17,9 +18,10 @@ async function buscarImagenPexels(consulta) {
       }
     });
 
-    const foto = response.data.photos[0];
+    const foto = response.data.photos[0]; // Toma la primera foto encontrada
     if (!foto) return null;
 
+    // Devuelve solo los datos necesarios: url de la imagen y créditos del fotógrafo
     return {
       url: foto.src.large,
       fotografo: foto.photographer,

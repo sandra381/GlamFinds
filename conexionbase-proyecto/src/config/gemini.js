@@ -1,9 +1,11 @@
+// Servicio que arma el prompt para la IA (Gemini) y genera outfits sugeridos en formato JSON
 const axios = require('axios');
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const GEMINI_MODEL = 'gemini-3.1-flash-lite';
 const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
 
+// Pausa la ejecución "ms" milisegundos, usada entre reintentos
 function esperar(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
@@ -56,6 +58,7 @@ async function generarOutfitIA(ocasion, clima, colores, intento = 1) {
   `;
 
   try {
+    // Envía el prompt a la API de Gemini y espera la respuesta generada
     const response = await axios.post(
       GEMINI_URL,
       {
@@ -69,11 +72,13 @@ async function generarOutfitIA(ocasion, clima, colores, intento = 1) {
       }
     );
 
+    // Limpia el texto de la respuesta (quita marcas de bloque ```json) y lo convierte a objeto JS
     const textoRespuesta = response.data.candidates[0].content.parts[0].text;
     const jsonLimpio = textoRespuesta.replace(/```json|```/g, '').trim();
     return JSON.parse(jsonLimpio);
 
   } catch (error) {
+    // Si Gemini responde 503 (saturado), reintenta hasta MAX_INTENTOS veces con espera creciente
     const esSaturado = error.response?.data?.error?.code === 503;
     const MAX_INTENTOS = 3;
 

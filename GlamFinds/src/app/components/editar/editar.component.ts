@@ -6,6 +6,10 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { BackendService } from 'src/app/services/backend.service';
 import { ShareDataService } from 'src/app/services/share-data.service';
 
+// Componente de "Configuración" (ruta "/configuracion"): permite al usuario
+// logueado editar su propio perfil (usuario, descripción, foto) y ver sus
+// estadísticas (seguidores/seguidos/publicaciones) junto con sus posts y
+// artículos propios en pestañas.
 @Component({
   selector: 'app-editar',
   templateUrl: './editar.component.html',
@@ -14,8 +18,11 @@ import { ShareDataService } from 'src/app/services/share-data.service';
   fomGroup: FormGroup = new FormGroup({});
   comicControl = new FormControl('', Validators.required);
   selectFormControl = new FormControl('', Validators.required);
+  // Archivo de imagen de perfil nueva seleccionada (File), si el usuario decide cambiarla.
   msg = '';
+  // URL local (data URL) de la nueva imagen seleccionada, usada para la vista previa.
   imgUrl= "";
+  // Datos del perfil que se están editando: usuario, descripción e imagen actual.
   posts_generales: any={
       id:0,
       usuario:'',
@@ -23,15 +30,26 @@ import { ShareDataService } from 'src/app/services/share-data.service';
       imagen:''
 
   }
+  // Lista de posts generales propios del usuario (pestaña "publicaciones").
   dataSource: any[] = [];
+  // Lista de artículos propios del usuario (pestaña de artículos).
   dataSource5: any[] = [];
+  // Pestaña actualmente activa en la vista (por defecto "publicaciones").
   activeTab = 'publicaciones';
 
+  // Cantidad de seguidores del usuario, mostrada en las estadísticas.
   followersCount: number = 0;
+  // Cantidad de usuarios a los que sigue, mostrada en las estadísticas.
   followingCount: number = 0;
+  // Cantidad total de publicaciones del usuario, mostrada en las estadísticas.
   postsCount: number = 0;
 
   constructor(private fb: FormBuilder,private share : ShareDataService , private router:Router, private backend4:BackendService,private activateRouter:ActivatedRoute,public snackBar: MatSnackBar,public dialog: MatDialog) {}
+
+  // Se ejecuta automáticamente al crear el componente.
+  // Si hay un usuario logueado (localStorage "ids"), pide en paralelo:
+  // sus datos de perfil, sus posts, sus artículos y sus estadísticas de
+  // seguidores/seguidos/publicaciones, y los guarda en las variables correspondientes.
   ngOnInit(): void {
     const id_new = localStorage.getItem('ids');
     if(id_new){
@@ -59,10 +77,18 @@ import { ShareDataService } from 'src/app/services/share-data.service';
   }
 
 
+  // Función auxiliar usada en el HTML para decidir si un nombre de archivo
+  // corresponde a una imagen (por su extensión), y así mostrarla como tal en la lista de posts/artículos.
   isImage(fileName: string): boolean {
     if (!fileName) return false;
     return /\.(jpg|jpeg|png|gif|webp|avif)$/i.test(fileName);
   }
+
+  // Se ejecuta cuando el usuario hace click en el botón "Guardar cambios" del formulario de perfil.
+  // Arma un FormData con el usuario, la descripción y la imagen (nueva si se
+  // seleccionó una, o la actual si no) y lo envía al backend
+  // (editarPosts2). Según la respuesta, muestra un mensaje de éxito y
+  // regresa al perfil, o un mensaje de error.
   guardarModificar() {
     const id_new = localStorage.getItem('ids');
     if (id_new) {
@@ -95,9 +121,16 @@ import { ShareDataService } from 'src/app/services/share-data.service';
       );
     }
   }
+
+  // Se ejecuta al terminar de guardar (o desde un botón "Cancelar").
+  // Navega de vuelta a la pantalla de perfil ("/perfil").
   regresar() {
     this.router.navigateByUrl("/perfil");
   }
+
+  // Se ejecuta cuando el usuario selecciona una nueva foto de perfil (evento
+  // "change" del <input type="file">). Genera la vista previa (data URL) en
+  // "imgUrl" y guarda el archivo real en "msg" para subirlo al guardar.
   imagenSelect(event: any) {
     if (event.target.files.length > 0) {
       const file = event.target.files[0];

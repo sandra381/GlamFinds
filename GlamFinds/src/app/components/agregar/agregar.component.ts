@@ -11,6 +11,11 @@ import { Publicidad } from 'src/app/models/Publicidad';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialog } from '@angular/material/dialog';
 import { Filter } from 'bad-words';
+
+// Formulario de administración con DOS secciones/formularios distintos:
+// 1) Publicar un POST GENERAL (para los feeds de ropa/maquillaje/etc.).
+// 2) Publicar un POST DE PUBLICIDAD (para descuentos/dups), que además lleva un link.
+// Se usa desde la ruta "/agregar" (a la que llega el usuario "AdminUser" tras loguearse).
 @Component({
   selector: 'app-agregar',
   templateUrl: './agregar.component.html',
@@ -18,14 +23,22 @@ import { Filter } from 'bad-words';
 })
 export class AgregarComponent {
   url: any;
+  // Archivo de imagen seleccionado (File) para el POST GENERAL, listo para enviarse en el FormData.
 	msg = '';
+  // URL local (data URL) de la imagen del post general, usada para mostrar la vista previa.
   imgUrl= "";
   url2: any;
+  // Archivo de imagen seleccionado (File) para el POST DE PUBLICIDAD.
 	msg2 = '';
+  // URL local (data URL) de la imagen del post de publicidad, usada para la vista previa.
   imgUrl2= "";
+  // Formulario reactivo del POST GENERAL (descripción, imagen, autor, categoría).
   formGroups: FormGroup = new FormGroup({});
+  // Formulario reactivo del POST DE PUBLICIDAD (descripción, imagen, autor, link, categoría).
   formGroups2: FormGroup = new FormGroup({});
 
+  // Al construirse el componente, arma ambos FormGroup con el id del usuario
+  // logueado (localStorage "ids") precargado como "autor".
   constructor(private fb: FormBuilder,private router:Router, private backend:BackendService,public snackBar: MatSnackBar,public dialog: MatDialog) {
     const user = localStorage.getItem('ids');
     this.formGroups = this.fb.group({
@@ -46,6 +59,12 @@ export class AgregarComponent {
     console.log(user);
   }
   //Post Generales
+
+  // Se ejecuta cuando el usuario hace click en el botón "Publicar" del formulario de post general.
+  // Arma un FormData con la imagen seleccionada y envía el formulario al
+  // backend (insertarPosts). Si todos los campos requeridos tienen valor,
+  // muestra un mensaje de éxito y limpia el formulario; si no, muestra un
+  // mensaje pidiendo completar los campos.
   guardarPostsG(){
     const formData = new FormData();
     formData.append('imagen', this.msg);
@@ -64,6 +83,12 @@ export class AgregarComponent {
       }
     });
   }
+
+  // Se ejecuta cuando el usuario selecciona un archivo de imagen en el input
+  // del formulario de post general (evento "change" del <input type="file">).
+  // Lee el archivo como data URL (para la vista previa en "imgUrl"), guarda
+  // el archivo real en "msg" para subirlo luego, y actualiza el campo
+  // "imagen" del formulario con el nombre del archivo.
   imagenSelect(event: any) {
     if (event.target.files.length > 0) {
       const file = event.target.files[0];
@@ -78,12 +103,19 @@ export class AgregarComponent {
       console.error('No se seleccionó ningún archivo');
     }
   }
+
+  // Resetea (vacía) el formulario del post general.
   limpiar(){
     this.formGroups.reset();
   }
 
   //Post Publicidad
 
+  // Se ejecuta cuando el usuario hace click en el botón "Publicar" del
+  // formulario de post de publicidad (descuentos/dups).
+  // Arma un FormData con la imagen seleccionada y envía el formulario al
+  // backend (insertarPostsP). Si todos los campos requeridos tienen valor,
+  // muestra un mensaje de éxito y limpia el formulario; si no, pide completar los campos.
   guardarPublicidad(){
     const formData2 = new FormData();
     formData2.append('imagen', this.msg2);
@@ -103,6 +135,11 @@ export class AgregarComponent {
       }
     });
   }
+
+  // Se ejecuta cuando el usuario selecciona un archivo de imagen en el input
+  // del formulario de post de publicidad (evento "change" del <input type="file">).
+  // Igual que imagenSelect() pero para el segundo formulario: guarda la
+  // vista previa en "imgUrl2" y el archivo en "msg2".
   imagenSelectP(event: any) {
     if (event.target.files.length > 0) {
       const file = event.target.files[0];
@@ -116,6 +153,8 @@ export class AgregarComponent {
       console.error('No se seleccionó ningún archivo');
     }
   }
+
+  // Resetea (vacía) el formulario del post de publicidad.
   limpiarP(){
     this.formGroups2.reset();
   }

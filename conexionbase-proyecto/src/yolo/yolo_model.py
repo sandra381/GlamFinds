@@ -1,26 +1,28 @@
 
+# Script que usa el modelo YOLO para detectar prendas de ropa en una imagen
 import sys
 import os
 sys.path.append(r'C:\Users\danie\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.12_qbz5n2kfra8p0\LocalCache\local-packages\Python312\site-packages')
 
 from ultralytics import YOLO
 
-model = YOLO('yolov8x.pt')
+model = YOLO('yolov8x.pt')  # Carga el modelo YOLOv8 preentrenado
 
+# Detecta objetos en la imagen dada y devuelve una lista con clase, confianza y coordenadas de cada uno
 def detect_objects(image_path):
     if not os.path.exists(image_path):
         print("La imagen no se encuentra en la ruta especificada.")
         return []
 
-    results = model(image_path)
+    results = model(image_path)  # Ejecuta la detección sobre la imagen
     detections = []
     for r in results:
         for obj in r.boxes.data.tolist():
             x1, y1, x2, y2, conf, cls = obj
             detections.append({
-                "class": model.names[int(cls)],  
-                "confidence": float(conf),      
-                "bbox": [x1, y1, x2, y2]        
+                "class": model.names[int(cls)],
+                "confidence": float(conf),
+                "bbox": [x1, y1, x2, y2]
             })
     return detections
 if __name__ == "__main__":
